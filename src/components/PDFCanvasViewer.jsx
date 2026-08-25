@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import * as pdfjsLib from 'pdfjs-dist'
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url'
 
@@ -11,16 +11,32 @@ export default function PDFCanvasViewer({ pdfUrl, title }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [scale, setScale] = useState(1.0)
-  const [renderedPages, setRenderedPages] = useState({})
-  const pdfDocRef = useRef(null)
+  const [containerWidth, setContainerWidth] = useState(360)
+  const [pdfDoc, setPdfDoc] = useState(null)
+
+  // Medir largura do container
+  useEffect(() => {
+    if (!containerRef.current) return
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(Math.max(280, containerRef.current.clientWidth - 32))
+      }
+    }
+    updateWidth()
+
+    const resizeObserver = new ResizeObserver(updateWidth)
+    resizeObserver.observe(containerRef.current)
+
+    return () => resizeObserver.disconnect()
+  }, [])
 
   // Carregar documento PDF
   useEffect(() => {
     let isMounted = true
     setLoading(true)
     setError(null)
-    setRenderedPages({})
-    pdfDocRef.current = null
+    setPdfDoc(null)
+    setNumPages(0)
 
     const loadingTask = pdfjsLib.getDocument({
       url: pdfUrl,
@@ -29,16 +45,16 @@ export default function PDFCanvasViewer({ pdfUrl, title }) {
     })
 
     loadingTask.promise
-      .then((pdfDoc) => {
+      .then((doc) => {
         if (!isMounted) return
-        pdfDocRef.current = pdfDoc
-        setNumPages(pdfDoc.numPages)
+        setPdfDoc(doc)
+        setNumPages(doc.numPages)
         setLoading(false)
       })
       .catch((err) => {
         console.error('Erro ao carregar PDF:', err)
         if (!isMounted) return
-        setError('No se pudo cargar el visor automático. Puedes abrir el archivo directamente.')
+        setError('No se pudo previsualizar el PDF automáticamente. Puedes abrirlo directamente.')
         setLoading(false)
       })
 
@@ -47,42 +63,6 @@ export default function PDFCanvasViewer({ pdfUrl, title }) {
       loadingTask.destroy().catch(() => {})
     }
   }, [pdfUrl])
-
-  // Renderizar páginas individuais quando o documento carregar ou a escala mudar
-  const renderPage = async (pageNumber, canvasElement) => {
-    if (!pdfDocRef.current || !canvasElement) return
-
-    try {
-      const page = await pdfDocRef.current.getPage(pageNumber)
-      const containerWidth = containerRef.current ? containerRef.current.clientWidth - 32 : 360
-      const unscaledViewport = page.getViewport({ scale: 1.0 })
-      
-      // Ajustar escala para caber na largura do celular
-      const fitScale = (containerWidth / unscaledViewport.width) * scale
-      const viewport = page.getViewport({ scale: fitScale })
-
-      const pixelRatio = window.devicePixelRatio || 1
-      canvasElement.width = Math.floor(viewport.width * pixelRatio)
-      canvasElement.height = Math.floor(viewport.height * pixelRatio)
-      canvasElement.style.width = `${Math.floor(viewport.width)}px`
-      canvasElement.style.height = `${Math.floor(viewport.height)}px`
-
-      const ctx = canvasElement.getContext('2d', { alpha: false })
-      ctx.imageSmoothingEnabled = true
-      ctx.imageSmoothingQuality = 'high'
-      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
-
-      const renderContext = {
-        canvasContext: ctx,
-        viewport: viewport,
-      }
-
-      await page.render(renderContext).promise
-      setRenderedPages((prev) => ({ ...prev, [pageNumber]: true }))
-    } catch (err) {
-      console.warn(`Erro ao renderizar página ${pageNumber}:`, err)
-    }
-  }
 
   return (
     <div ref={containerRef} className="flex flex-col h-full bg-background overflow-hidden relative">
@@ -95,7 +75,8 @@ export default function PDFCanvasViewer({ pdfUrl, title }) {
         }}
       >
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full border"
+          <span
+            className="text-xs font-semibold px-2.5 py-1 rounded-full border"
             style={{
               background: 'hsl(var(--background))',
               borderColor: 'hsl(var(--border))',
@@ -148,17 +129,18 @@ export default function PDFCanvasViewer({ pdfUrl, title }) {
       </div>
 
       {/* Área de Visualização do PDF */}
-      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar p-4 space-y-4">
+      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar p-4 space-y-5">
         {loading && (
-          <div className="flex flex-col items-center justify-center py-20 space-y-3">
+          <div className="flex flex-col items-center justify-center py-24 space-y-3">
             <div className="w-10 h-10 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
-            <p className="text-sm font-semibold text-foreground">Cargando documento...</p>
+            <p className="text-sm font-semibold text-foreground">Cargando documento PDF...</p>
             <p className="text-xs text-muted-foreground">Preparando páginas en alta definición</p>
           </div>
         )}
 
         {error && (
-          <div className="p-6 rounded-[20px] border text-center my-8 space-y-3"
+          <div
+            className="p-6 rounded-[20px] border text-center my-8 space-y-3"
             style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
           >
             <div className="text-3xl">📄</div>
@@ -175,15 +157,17 @@ export default function PDFCanvasViewer({ pdfUrl, title }) {
           </div>
         )}
 
-        {!loading && !error && numPages > 0 && (
+        {!loading && !error && pdfDoc && numPages > 0 && (
           Array.from({ length: numPages }, (_, index) => {
             const pageNum = index + 1
             return (
               <PDFPageItem
-                key={`${pdfUrl}-page-${pageNum}-${scale}`}
+                key={`${pdfUrl}-page-${pageNum}`}
+                pdfDoc={pdfDoc}
                 pageNumber={pageNum}
                 numPages={numPages}
-                renderPage={renderPage}
+                containerWidth={containerWidth}
+                scale={scale}
               />
             )
           })
@@ -193,14 +177,85 @@ export default function PDFCanvasViewer({ pdfUrl, title }) {
   )
 }
 
-function PDFPageItem({ pageNumber, numPages, renderPage }) {
+function PDFPageItem({ pdfDoc, pageNumber, numPages, containerWidth, scale }) {
   const canvasRef = useRef(null)
+  const renderTaskRef = useRef(null)
+  const [dimensions, setDimensions] = useState({ width: containerWidth, height: containerWidth * 1.414 })
+  const [pageReady, setPageReady] = useState(false)
 
   useEffect(() => {
-    if (canvasRef.current) {
-      renderPage(pageNumber, canvasRef.current)
+    let isCancelled = false
+
+    const render = async () => {
+      if (!pdfDoc || !canvasRef.current) return
+
+      // Cancelar qualquer renderização anterior em andamento
+      if (renderTaskRef.current) {
+        try {
+          renderTaskRef.current.cancel()
+        } catch {}
+        renderTaskRef.current = null
+      }
+
+      try {
+        const page = await pdfDoc.getPage(pageNumber)
+        if (isCancelled) return
+
+        const unscaledViewport = page.getViewport({ scale: 1.0 })
+        const fitScale = (containerWidth / unscaledViewport.width) * scale
+        const viewport = page.getViewport({ scale: fitScale })
+
+        const pixelRatio = window.devicePixelRatio || 1
+        const displayWidth = Math.floor(viewport.width)
+        const displayHeight = Math.floor(viewport.height)
+
+        setDimensions({ width: displayWidth, height: displayHeight })
+
+        const canvas = canvasRef.current
+        if (!canvas) return
+
+        canvas.width = Math.floor(viewport.width * pixelRatio)
+        canvas.height = Math.floor(viewport.height * pixelRatio)
+        canvas.style.width = `${displayWidth}px`
+        canvas.style.height = `${displayHeight}px`
+
+        const ctx = canvas.getContext('2d')
+        // Preencher o canvas com fundo branco antes da renderização do PDF para evitar qualquer tela preta
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
+
+        const renderContext = {
+          canvasContext: ctx,
+          viewport: viewport,
+        }
+
+        const renderTask = page.render(renderContext)
+        renderTaskRef.current = renderTask
+
+        await renderTask.promise
+        if (!isCancelled) {
+          setPageReady(true)
+        }
+      } catch (err) {
+        if (err?.name !== 'RenderingCancelledException') {
+          console.warn(`Página ${pageNumber} render error:`, err)
+        }
+      }
     }
-  }, [pageNumber, renderPage])
+
+    render()
+
+    return () => {
+      isCancelled = true
+      if (renderTaskRef.current) {
+        try {
+          renderTaskRef.current.cancel()
+        } catch {}
+        renderTaskRef.current = null
+      }
+    }
+  }, [pdfDoc, pageNumber, containerWidth, scale])
 
   return (
     <div className="flex flex-col items-center">
@@ -209,12 +264,25 @@ function PDFPageItem({ pageNumber, numPages, renderPage }) {
         Pág. {pageNumber} de {numPages}
       </div>
 
-      {/* Folha do PDF */}
+      {/* Folha do PDF com fundo branco sólido sempre */}
       <div
-        className="rounded-[12px] overflow-hidden shadow-lg border bg-white flex justify-center"
-        style={{ borderColor: 'hsl(var(--border))' }}
+        className="rounded-[12px] overflow-hidden shadow-md border bg-white flex justify-center transition-all"
+        style={{
+          borderColor: 'hsl(var(--border))',
+          width: `${dimensions.width}px`,
+          minHeight: `${dimensions.height}px`,
+          backgroundColor: '#ffffff',
+        }}
       >
-        <canvas ref={canvasRef} className="block max-w-full" />
+        <canvas
+          ref={canvasRef}
+          className="block bg-white"
+          style={{
+            maxWidth: '100%',
+            opacity: pageReady ? 1 : 0.9,
+            backgroundColor: '#ffffff',
+          }}
+        />
       </div>
     </div>
   )
