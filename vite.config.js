@@ -7,7 +7,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/*.png'],
+      includeAssets: ['icons/*.png', 'icons/*.svg', 'pdfs/*.pdf'],
+      workbox: {
+        navigateFallbackDenylist: [/^\/pdfs\//, /^\/icons\//, /\.[a-zA-Z0-9]+$/],
+      },
       manifest: {
         name: 'El Protocolo del Vinagre',
         short_name: 'Protocolo',

@@ -1,8 +1,23 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!pdfs/|icons/|.*\\.[\\w]+$).*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/pdfs/(.*)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/pdf"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "inline"
+        }
+      ]
     }
   ]
 }
