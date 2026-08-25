@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Shadcn-style HSL color tokens ── */
+:root {
+  --background: 43 38% 91%;
+  --foreground: 128 10% 17%;
+  --card: 48 50% 97%;
+  --card-foreground: 128 10% 17%;
+  --primary: 128 18% 40%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 128 14% 88%;
+  --secondary-foreground: 128 10% 17%;
+  --muted: 128 10% 86%;
+  --muted-foreground: 128 7% 47%;
+  --accent: 36 66% 42%;
+  --accent-foreground: 0 0% 100%;
+  --border: 44 18% 82%;
+  --ring: 128 18% 40%;
+  --radius: 18px;
+
+  /* Extra tokens not in shadcn base */
+  --accent-pale: 38 80% 93%;
+  --green-pale: 128 28% 92%;
+  --nav-height: 76px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: 128 8% 10%;
+    --foreground: 44 18% 88%;
+    --card: 128 8% 13%;
+    --card-foreground: 44 18% 88%;
+    --primary: 128 18% 55%;
+    --primary-foreground: 128 8% 10%;
+    --secondary: 128 8% 17%;
+    --secondary-foreground: 44 18% 88%;
+    --muted: 128 8% 17%;
+    --muted-foreground: 128 7% 52%;
+    --accent: 36 66% 53%;
+    --accent-foreground: 128 8% 10%;
+    --border: 128 8% 20%;
+    --ring: 128 18% 55%;
+
+    --accent-pale: 36 40% 16%;
+    --green-pale: 128 14% 14%;
+  }
+}
+
+:root[data-theme="dark"] {
+  --background: 128 8% 10%;
+  --foreground: 44 18% 88%;
+  --card: 128 8% 13%;
+  --card-foreground: 44 18% 88%;
+  --primary: 128 18% 55%;
+  --primary-foreground: 128 8% 10%;
+  --secondary: 128 8% 17%;
+  --secondary-foreground: 44 18% 88%;
+  --muted: 128 8% 17%;
+  --muted-foreground: 128 7% 52%;
+  --accent: 36 66% 53%;
+  --accent-foreground: 128 8% 10%;
+  --border: 128 8% 20%;
+  --ring: 128 18% 55%;
+
+  --accent-pale: 36 40% 16%;
+  --green-pale: 128 14% 14%;
+}
+
+/* ── Base ── */
+*, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html {
+  font-size: 18px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  background: hsl(var(--background));
+  position: relative;
+}
+
+/* ── Animations ── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(.88); }
+  65%  { transform: scale(1.06); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes slideUpFull {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+@keyframes badgePop {
+  0%  { transform: scale(0) rotate(-12deg); opacity: 0; }
+  65% { transform: scale(1.14) rotate(4deg); }
+  100%{ transform: scale(1) rotate(0); opacity: 1; }
+}
+@keyframes ringDraw {
+  from { stroke-dashoffset: 452; }
+  to   { stroke-dashoffset: var(--ring-offset); }
+}
+@keyframes checkPulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsla(var(--primary) / .4); }
+  60%       { box-shadow: 0 0 0 10px hsla(var(--primary) / 0); }
+}
+@keyframes confettiFall {
+  0%   { transform: translateY(0) rotate(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-80px) rotate(400deg) scale(.4); opacity: 0; }
+}
+
+.animate-fade { animation: fadeSlideUp .35s ease both; }
+.animate-pop  { animation: popIn .4s ease both; }
+.animate-slide-up { animation: slideUpFull .28s cubic-bezier(.2,.9,.4,1) both; }
+.animate-badge { animation: badgePop .5s ease both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* ── Scrollbar hide ── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Focus ring ── */
+:focus-visible {
+  outline: 3px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-radius: 6px;
+}

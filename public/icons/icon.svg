@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="120" fill="#567856"/>
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8A84F"/>
+      <stop offset="100%" stop-color="#B87823"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <!-- Decorative Ring -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#F4EFE6" stroke-width="6" opacity="0.2"/>
+  <!-- Bottle / Droplet Emblem -->
+  <g filter="url(#shadow)">
+    <path d="M256 95 C256 95 155 230 155 325 C155 381 200 425 256 425 C312 425 357 381 357 325 C357 230 256 95 256 95 Z" fill="url(#grad)"/>
+    <path d="M256 160 C256 160 190 255 190 320 C190 357 220 387 256 387 C292 387 322 357 322 320 C322 255 256 160 256 160 Z" fill="#F4EFE6" opacity="0.95"/>
+    <!-- Herbal Leaf interior line -->
+    <path d="M256 210 Q285 270 270 340" stroke="#567856" stroke-width="14" stroke-linecap="round" fill="none"/>
+    <path d="M256 255 Q230 285 230 310" stroke="#567856" stroke-width="10" stroke-linecap="round" fill="none"/>
+    <path d="M260 285 Q285 305 285 320" stroke="#567856" stroke-width="9" stroke-linecap="round" fill="none"/>
+    <circle cx="256" cy="80" r="22" fill="#E8A84F"/>
+  </g>
+</svg>
