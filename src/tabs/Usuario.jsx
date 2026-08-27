@@ -66,7 +66,7 @@ function MilestoneRow({ icon, day, label, reached }) {
 
 // ── Second-offer card ─────────────────────────────────────────────────────────
 
-function OfferCard({ icon, tag, title, description, unlocked, unlockHint }) {
+function OfferCard({ icon, tag, title, description, unlocked, unlockHint, onCta }) {
   const isLocked = unlocked === false
   const isSoon   = unlocked === 'soon'
   const isOpen   = unlocked === true
@@ -115,7 +115,7 @@ function OfferCard({ icon, tag, title, description, unlocked, unlockHint }) {
           <button
             className="w-full py-3.5 rounded-[12px] font-semibold text-sm transition-all active:scale-[.97]"
             style={{ background: 'hsl(128 28% 36%)', color: '#fff' }}
-            onClick={() => {}}
+            onClick={onCta ?? (() => {})}
           >
             Ver ahora →
           </button>
@@ -219,7 +219,7 @@ function HelpRow({ icon, label, href, onClick, badge }) {
 
 // ── Main tab ──────────────────────────────────────────────────────────────────
 
-export default function Usuario({ appState, handlers }) {
+export default function Usuario({ appState, handlers, setTab }) {
   const { day, days, lessons, bonuses, email, vibrationEnabled, pwa } = appState
   const { toggleVibration, handleLogout } = handlers
 
@@ -381,11 +381,12 @@ export default function Usuario({ appState, handlers }) {
             unlockHint="Completa los 21 días para desbloquear"
           />
           <OfferCard
-            icon="🥗"
-            tag="Guía de Alimentación"
-            title="Plan Antiinflamatorio de 30 días"
-            description="Cada comida diseñada para potenciar el vinagre. Recetas, lista de compras y horarios listos para usar."
-            unlocked="soon"
+            icon="🧪"
+            tag="Programa de Apoyo"
+            title="Ritual Activador Ácido"
+            description="7 materiales incluidos con tu programa: 4 protocolos y 3 bonos exclusivos para potenciar tus resultados. Disponible ahora."
+            unlocked={true}
+            onCta={() => setTab('bonos')}
           />
           <OfferCard
             icon="🎙️"

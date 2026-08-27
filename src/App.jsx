@@ -26,6 +26,8 @@ function buildInitialState() {
     days: Array(21).fill(false),
     lessons: [false, false, false, false],
     bonuses: [false, false, false],
+    ritualProtocols: [false, false, false, false],
+    ritualBonuses: [false, false, false],
     symScores: {},
   }
 }
@@ -40,6 +42,8 @@ export default function App() {
   const [days, setDays] = useState(() => Array(21).fill(false))
   const [lessons, setLessons] = useState([false, false, false, false])
   const [bonuses, setBonuses] = useState([false, false, false])
+  const [ritualProtocols, setRitualProtocols] = useState([false, false, false, false])
+  const [ritualBonuses, setRitualBonuses] = useState([false, false, false])
   const [symScores, setSymScores] = useState({})
 
   // Device-level preference — not per-user, so stored globally
@@ -59,6 +63,8 @@ export default function App() {
       setDays(saved.days)
       setLessons(saved.lessons)
       setBonuses(saved.bonuses)
+      setRitualProtocols(saved.ritualProtocols || [false, false, false, false])
+      setRitualBonuses(saved.ritualBonuses || [false, false, false])
       setSymScores(saved.symScores || {})
     } else {
       // Fresh start — keep demo state
@@ -75,8 +81,8 @@ export default function App() {
   // Persist on every state change after login
   useEffect(() => {
     if (!loggedIn || !email) return
-    saveState(email, { day, days, lessons, bonuses, symScores })
-  }, [loggedIn, email, day, days, lessons, bonuses, symScores])
+    saveState(email, { day, days, lessons, bonuses, ritualProtocols, ritualBonuses, symScores })
+  }, [loggedIn, email, day, days, lessons, bonuses, ritualProtocols, ritualBonuses, symScores])
 
   function buzz(pattern) {
     if (vibrationEnabled && navigator.vibrate) navigator.vibrate(pattern)
@@ -104,6 +110,20 @@ export default function App() {
     triggerConfetti()
   }, [vibrationEnabled])
 
+  const completeRitualProtocol = useCallback((id) => {
+    setRitualProtocols(prev => { const n = [...prev]; n[id] = true; return n })
+    setViewer(null)
+    buzz(60)
+    triggerConfetti()
+  }, [vibrationEnabled])
+
+  const completeRitualBonus = useCallback((id) => {
+    setRitualBonuses(prev => { const n = [...prev]; n[id] = true; return n })
+    setViewer(null)
+    buzz(60)
+    triggerConfetti()
+  }, [vibrationEnabled])
+
   const recordSymptom = useCallback((checkDay, score) => {
     setSymScores(prev => ({ ...prev, [checkDay]: score }))
   }, [])
@@ -123,8 +143,8 @@ export default function App() {
     setTab('inicio')
   }, [])
 
-  const appState = { day, days, lessons, bonuses, symScores, email, vibrationEnabled, pwa }
-  const handlers = { completeToday, completeLesson, completeBonus, recordSymptom, toggleVibration, handleLogout, pwa }
+  const appState = { day, days, lessons, bonuses, ritualProtocols, ritualBonuses, symScores, email, vibrationEnabled, pwa }
+  const handlers = { completeToday, completeLesson, completeBonus, completeRitualProtocol, completeRitualBonus, recordSymptom, toggleVibration, handleLogout, pwa }
 
   return (
     <>
@@ -145,7 +165,12 @@ export default function App() {
         <Viewer
           viewer={viewer}
           appState={appState}
-          onComplete={viewer.type === 'lesson' ? completeLesson : completeBonus}
+          onComplete={
+            viewer.type === 'lesson'          ? completeLesson :
+            viewer.type === 'bonus'           ? completeBonus  :
+            viewer.type === 'ritual-protocol' ? completeRitualProtocol :
+                                               completeRitualBonus
+          }
           onClose={() => setViewer(null)}
         />
       )}

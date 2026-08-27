@@ -1,4 +1,4 @@
-import { LESSONS, BONOS } from '../data'
+import { LESSONS, BONOS, RITUAL_PROTOCOLS, RITUAL_BONUSES } from '../data'
 import PDFCanvasViewer from './PDFCanvasViewer'
 
 function BackIcon() {
@@ -27,12 +27,61 @@ function DownloadIcon() {
   )
 }
 
+function NoPdfPlaceholder({ icon, subtitle }) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full gap-4 px-8 text-center">
+      <span className="text-[3rem]">{icon}</span>
+      <p className="font-display font-semibold text-[1.1rem] text-foreground">{subtitle}</p>
+      <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
+        El contenido de este material estará disponible muy pronto.
+        Cuando esté listo, aparecerá aquí automáticamente.
+      </p>
+    </div>
+  )
+}
+
+function resolveViewer(type, id, appState) {
+  switch (type) {
+    case 'lesson':
+      return {
+        item: LESSONS[id],
+        isDone: appState.lessons[id],
+        eyebrow: LESSONS[id]?.eyebrow,
+        doneLabel: 'Lección completada',
+      }
+    case 'bonus':
+      return {
+        item: BONOS[id],
+        isDone: appState.bonuses[id],
+        eyebrow: BONOS[id]?.tag,
+        doneLabel: 'Bono revisado',
+      }
+    case 'ritual-protocol':
+      return {
+        item: RITUAL_PROTOCOLS[id],
+        isDone: appState.ritualProtocols?.[id],
+        eyebrow: 'Ritual Activador Ácido',
+        doneLabel: 'Protocolo completado',
+      }
+    case 'ritual-bonus':
+      return {
+        item: RITUAL_BONUSES[id],
+        isDone: appState.ritualBonuses?.[id],
+        eyebrow: 'Bono del Ritual',
+        doneLabel: 'Bono revisado',
+      }
+    default:
+      return { item: null, isDone: false, eyebrow: '', doneLabel: 'Completado' }
+  }
+}
+
 export default function Viewer({ viewer, appState, onComplete, onClose }) {
   const { type, id } = viewer
-  const isLesson = type === 'lesson'
+  const { item, isDone, eyebrow, doneLabel } = resolveViewer(type, id, appState)
 
-  const item = isLesson ? LESSONS[id] : BONOS[id]
-  const isDone = isLesson ? appState.lessons[id] : appState.bonuses[id]
+  if (!item) return null
+
+  const isRitual = type === 'ritual-protocol' || type === 'ritual-bonus'
 
   return (
     <div
@@ -57,8 +106,11 @@ export default function Viewer({ viewer, appState, onComplete, onClose }) {
         </button>
 
         <div className="flex-1 min-w-0">
-          <p className="text-[.65rem] font-bold tracking-widest uppercase" style={{ color: 'hsl(var(--accent))' }}>
-            {isLesson ? item.eyebrow : item.tag}
+          <p
+            className="text-[.65rem] font-bold tracking-widest uppercase"
+            style={{ color: isRitual ? 'hsl(var(--accent))' : 'hsl(var(--primary))' }}
+          >
+            {eyebrow}
           </p>
           <h2 className="font-display font-semibold text-[.95rem] text-foreground leading-snug text-balance truncate">
             {item.title}
@@ -73,9 +125,9 @@ export default function Viewer({ viewer, appState, onComplete, onClose }) {
             download
             className="w-10 h-10 shrink-0 rounded-full border flex items-center justify-center transition-all active:scale-[.92]"
             style={{
-              background: 'hsl(var(--green-pale))',
-              borderColor: 'hsl(var(--primary) / .3)',
-              color: 'hsl(var(--primary))',
+              background: isRitual ? 'hsl(var(--accent-pale))' : 'hsl(var(--green-pale))',
+              borderColor: isRitual ? 'hsl(var(--accent) / .3)' : 'hsl(var(--primary) / .3)',
+              color: isRitual ? 'hsl(var(--accent))' : 'hsl(var(--primary))',
             }}
             aria-label="Descargar archivo PDF"
             title="Descargar archivo PDF"
@@ -85,18 +137,16 @@ export default function Viewer({ viewer, appState, onComplete, onClose }) {
         )}
       </div>
 
-      {/* Visualizador de PDF Direto e Nativo via Canvas */}
+      {/* Content area */}
       <div className="flex-1 min-h-0 overflow-hidden">
         {item.pdf ? (
           <PDFCanvasViewer pdfUrl={item.pdf} title={item.title} />
         ) : (
-          <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
-            No se encontró el documento PDF.
-          </div>
+          <NoPdfPlaceholder icon={item.icon ?? '📄'} subtitle={item.subtitle ?? item.desc ?? item.title} />
         )}
       </div>
 
-      {/* Footer — Botão de Concluir */}
+      {/* Footer — complete button */}
       <div
         className="px-4 py-3.5 border-t shrink-0 z-10"
         style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--background))' }}
@@ -107,18 +157,16 @@ export default function Viewer({ viewer, appState, onComplete, onClose }) {
           className="w-full flex items-center justify-center gap-2.5 py-[15px] rounded-[14px] font-semibold text-base transition-all active:scale-[.97]"
           style={
             isDone
-              ? { background: 'hsl(var(--green-pale))', color: 'hsl(var(--primary))', cursor: 'default' }
+              ? { background: isRitual ? 'hsl(var(--accent-pale))' : 'hsl(var(--green-pale))', color: isRitual ? 'hsl(var(--accent))' : 'hsl(var(--primary))', cursor: 'default' }
               : {
-                  background: 'hsl(128 28% 36%)',
+                  background: isRitual ? 'hsl(36 66% 42%)' : 'hsl(128 28% 36%)',
                   color: '#fff',
-                  boxShadow: '0 4px 16px hsl(128 28% 36% / .3)',
+                  boxShadow: isRitual ? '0 4px 16px hsl(36 66% 42% / .3)' : '0 4px 16px hsl(128 28% 36% / .3)',
                 }
           }
         >
           <CheckIcon />
-          {isDone
-            ? (isLesson ? 'Lección completada' : 'Bono revisado')
-            : 'Marcar como completado'}
+          {isDone ? doneLabel : 'Marcar como completado'}
         </button>
       </div>
     </div>
