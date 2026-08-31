@@ -425,34 +425,51 @@ export default function Bonos({ appState, setViewer }) {
           </div>
         </button>
 
-        {/* Conteúdo expandível */}
-        {ritualOpen && (
-          <div className="px-4 pt-4 pb-4" style={{ background: 'hsl(38 80% 97%)' }}>
-            <SectionLabel>Protocolos</SectionLabel>
-            <div className="grid grid-cols-2 gap-2.5 mb-4">
-              {RITUAL_PROTOCOLS.map((p) => (
-                <RitualProtocolCard
-                  key={p.id}
-                  item={p}
-                  done={ritualProtocols[p.id]}
-                  onOpen={() => setViewer({ type: 'ritual-protocol', id: p.id })}
-                />
-              ))}
-            </div>
+        {/* Conteúdo expandível — grid trick: anima altura real sem max-height fixo */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateRows: ritualOpen ? '1fr' : '0fr',
+            transition: 'grid-template-rows 0.38s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        >
+          <div style={{ overflow: 'hidden' }}>
+            <div
+              className="px-4 pt-4 pb-4"
+              style={{
+                background: 'hsl(38 80% 97%)',
+                opacity: ritualOpen ? 1 : 0,
+                transform: ritualOpen ? 'translateY(0)' : 'translateY(-6px)',
+                transition: 'opacity 0.28s ease, transform 0.28s ease',
+                transitionDelay: ritualOpen ? '0.08s' : '0s',
+              }}
+            >
+              <SectionLabel>Protocolos</SectionLabel>
+              <div className="grid grid-cols-2 gap-2.5 mb-4">
+                {RITUAL_PROTOCOLS.map((p) => (
+                  <RitualProtocolCard
+                    key={p.id}
+                    item={p}
+                    done={ritualProtocols[p.id]}
+                    onOpen={() => setViewer({ type: 'ritual-protocol', id: p.id })}
+                  />
+                ))}
+              </div>
 
-            <SectionLabel>Bonos del Ritual</SectionLabel>
-            <div className="flex flex-col gap-2.5">
-              {RITUAL_BONUSES.map((b) => (
-                <RitualBonusCard
-                  key={b.id}
-                  item={b}
-                  done={ritualBonuses[b.id]}
-                  onOpen={() => setViewer({ type: 'ritual-bonus', id: b.id })}
-                />
-              ))}
+              <SectionLabel>Bonos del Ritual</SectionLabel>
+              <div className="flex flex-col gap-2.5">
+                {RITUAL_BONUSES.map((b) => (
+                  <RitualBonusCard
+                    key={b.id}
+                    item={b}
+                    done={ritualBonuses[b.id]}
+                    onOpen={() => setViewer({ type: 'ritual-bonus', id: b.id })}
+                  />
+                ))}
+              </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* ── BLOCO SAGE GREEN — Bonos del Protocolo del Vinagre ── */}
