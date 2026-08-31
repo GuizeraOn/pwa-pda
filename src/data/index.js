@@ -27,6 +27,14 @@ export const LESSONS = [
     desc: 'La limpieza profunda que potencia el protocolo',
     pdf: '/pdfs/Programa-de-Limpieza-con-Vinagre-de-Sidra-de-Manzana.pdf',
   },
+  {
+    id: 4,
+    eyebrow: 'Lección 5',
+    title: 'La Hora del Intestino',
+    desc: 'El momento exacto que activa la absorción máxima',
+    badge: 'Nuevo',
+    pdf: null,
+  },
 ]
 
 export const BONOS = [
@@ -62,17 +70,16 @@ export const BONOS = [
   },
 ]
 
-export const RITUAL_PROTOCOLS = [
-  { id: 0, title: 'El Shot Activador',    subtitle: 'Ritual de 60 segundos',  icon: '💛', pdf: '/pdfs/ritual/Protocolo-Matutino-de-Limpieza-Pulmonar.pdf' },
-  { id: 1, title: 'Mapa de Alimentos',    subtitle: 'Apaga el fuego interno', icon: '🗺️', pdf: '/pdfs/ritual/Guia-Antiinflamatoria-para-tu-Protocolo-Respiratorio.pdf' },
-  { id: 2, title: 'La Ventana de 20 Min', subtitle: 'El timing exacto',       icon: '⏱️', pdf: '/pdfs/ritual/Sincronia-Metabolica-Guia-para-tu-Protocolo-de-Vinagre-y-Antiinflamatorios.pdf' },
-  { id: 3, title: 'Termómetro',           subtitle: 'Mide tu inflamación',    icon: '🌡️', pdf: '/pdfs/ritual/Guia-de-Autoevaluacion-Apagando-el-Fuego-Interno.pdf' },
+export const ABSORCION_PROTOCOLS = [
+  { id: 0, title: 'El Protocolo de los 7 Días', subtitle: 'El núcleo · Plan día a día',       icon: '📋', size: 'large', pdf: null },
+  { id: 1, title: 'Mapa de Bactericidas',        subtitle: 'Alimentos que amplifican el ACV',  icon: '🗺️', size: 'small', pdf: null },
+  { id: 2, title: 'Test de la Microbiota',        subtitle: 'Evalúa tu nivel de partida',       icon: '🌡️', size: 'small', pdf: null },
 ]
 
-export const RITUAL_BONUSES = [
-  { id: 0, title: 'Articulaciones Sin Fuego',          subtitle: 'Recupera tu movilidad', icon: '🦴', pdf: '/pdfs/ritual/De-la-Respiracion-al-Movimiento-Tu-Protocolo-de-Recuperacion-Integral.pdf' },
-  { id: 1, title: 'Audio de Respiración Regenerativa', subtitle: 'Ejercicio guiado',      icon: '🎧', pdf: null },
-  { id: 2, title: 'El Secreto del Día Cuatro',         subtitle: 'Bono exclusivo',        icon: '🔐', pdf: '/pdfs/ritual/El-bonus-que-nadie-te-da-el-ajuste-del-dia-4-que-despega-tu-limpieza-pulmonar.pdf' },
+export const ABSORCION_BONUSES = [
+  { id: 0, title: 'Código Articular',            subtitle: 'Recupera tu flexibilidad natural', icon: '🦴', secret: false, pdf: null },
+  { id: 1, title: 'Truco de la Mente Despierta', subtitle: 'Optimiza tu foco y energía',       icon: '🧠', secret: false, pdf: null },
+  { id: 2, title: 'El Día Cero',                  subtitle: 'El secreto que lo cambia todo',    icon: '🔐', secret: true,  pdf: null },
 ]
 
 export const ACHIEVEMENTS = [

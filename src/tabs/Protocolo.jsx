@@ -19,14 +19,14 @@ function CheckIcon() {
 export default function Protocolo({ appState, setViewer }) {
   const { lessons } = appState
   const doneCount = lessons.filter(Boolean).length
-  const fillPct = (doneCount / 4) * 100
+  const fillPct = (doneCount / LESSONS.length) * 100
 
   return (
     <div className="animate-fade">
       <div className="px-5 pt-6 pb-4">
         <h2 className="font-display font-bold text-[1.5rem] text-foreground">El Protocolo</h2>
         <p className="text-sm mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
-          {doneCount} de 4 lecciones completadas
+          {doneCount} de {LESSONS.length} lecciones completadas
         </p>
       </div>
 
@@ -57,12 +57,22 @@ export default function Protocolo({ appState, setViewer }) {
 
             {/* Text */}
             <div className="flex-1 min-w-0">
-              <p
-                className="text-xs font-bold tracking-widest uppercase"
-                style={{ color: 'hsl(var(--muted-foreground))' }}
-              >
-                {lesson.eyebrow}
-              </p>
+              <div className="flex items-center gap-2">
+                <p
+                  className="text-xs font-bold tracking-widest uppercase"
+                  style={{ color: 'hsl(var(--muted-foreground))' }}
+                >
+                  {lesson.eyebrow}
+                </p>
+                {lesson.badge && (
+                  <span
+                    className="text-[.6rem] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{ background: 'hsl(var(--accent))', color: 'white' }}
+                  >
+                    {lesson.badge}
+                  </span>
+                )}
+              </div>
               <p className="font-semibold text-sm text-foreground mt-0.5 leading-snug">
                 {lesson.title}
               </p>

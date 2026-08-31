@@ -24,10 +24,10 @@ function buildInitialState() {
   return {
     day: 1,
     days: Array(21).fill(false),
-    lessons: [false, false, false, false],
+    lessons: [false, false, false, false, false],
     bonuses: [false, false, false],
-    ritualProtocols: [false, false, false, false],
-    ritualBonuses: [false, false, false],
+    absorcionProtocols: [false, false, false],
+    absorcionBonuses: [false, false, false],
     symScores: {},
   }
 }
@@ -40,10 +40,10 @@ export default function App() {
 
   const [day, setDay] = useState(1)
   const [days, setDays] = useState(() => Array(21).fill(false))
-  const [lessons, setLessons] = useState([false, false, false, false])
+  const [lessons, setLessons] = useState([false, false, false, false, false])
   const [bonuses, setBonuses] = useState([false, false, false])
-  const [ritualProtocols, setRitualProtocols] = useState([false, false, false, false])
-  const [ritualBonuses, setRitualBonuses] = useState([false, false, false])
+  const [absorcionProtocols, setAbsorcionProtocols] = useState([false, false, false])
+  const [absorcionBonuses, setAbsorcionBonuses] = useState([false, false, false])
   const [symScores, setSymScores] = useState({})
 
   // Device-level preference — not per-user, so stored globally
@@ -61,10 +61,10 @@ export default function App() {
     if (saved) {
       setDay(saved.day)
       setDays(saved.days)
-      setLessons(saved.lessons)
+      setLessons((saved.lessons?.length ?? 0) >= 5 ? saved.lessons : [...(saved.lessons || [false,false,false,false]), false])
       setBonuses(saved.bonuses)
-      setRitualProtocols(saved.ritualProtocols || [false, false, false, false])
-      setRitualBonuses(saved.ritualBonuses || [false, false, false])
+      setAbsorcionProtocols(saved.absorcionProtocols || [false, false, false])
+      setAbsorcionBonuses(saved.absorcionBonuses || [false, false, false])
       setSymScores(saved.symScores || {})
     } else {
       // Fresh start — keep demo state
@@ -81,8 +81,8 @@ export default function App() {
   // Persist on every state change after login
   useEffect(() => {
     if (!loggedIn || !email) return
-    saveState(email, { day, days, lessons, bonuses, ritualProtocols, ritualBonuses, symScores })
-  }, [loggedIn, email, day, days, lessons, bonuses, ritualProtocols, ritualBonuses, symScores])
+    saveState(email, { day, days, lessons, bonuses, absorcionProtocols, absorcionBonuses, symScores })
+  }, [loggedIn, email, day, days, lessons, bonuses, absorcionProtocols, absorcionBonuses, symScores])
 
   function buzz(pattern) {
     if (vibrationEnabled && navigator.vibrate) navigator.vibrate(pattern)
@@ -110,15 +110,15 @@ export default function App() {
     triggerConfetti()
   }, [vibrationEnabled])
 
-  const completeRitualProtocol = useCallback((id) => {
-    setRitualProtocols(prev => { const n = [...prev]; n[id] = true; return n })
+  const completeAbsorcionProtocol = useCallback((id) => {
+    setAbsorcionProtocols(prev => { const n = [...prev]; n[id] = true; return n })
     setViewer(null)
     buzz(60)
     triggerConfetti()
   }, [vibrationEnabled])
 
-  const completeRitualBonus = useCallback((id) => {
-    setRitualBonuses(prev => { const n = [...prev]; n[id] = true; return n })
+  const completeAbsorcionBonus = useCallback((id) => {
+    setAbsorcionBonuses(prev => { const n = [...prev]; n[id] = true; return n })
     setViewer(null)
     buzz(60)
     triggerConfetti()
@@ -143,8 +143,8 @@ export default function App() {
     setTab('inicio')
   }, [])
 
-  const appState = { day, days, lessons, bonuses, ritualProtocols, ritualBonuses, symScores, email, vibrationEnabled, pwa }
-  const handlers = { completeToday, completeLesson, completeBonus, completeRitualProtocol, completeRitualBonus, recordSymptom, toggleVibration, handleLogout, pwa }
+  const appState = { day, days, lessons, bonuses, absorcionProtocols, absorcionBonuses, symScores, email, vibrationEnabled, pwa }
+  const handlers = { completeToday, completeLesson, completeBonus, completeAbsorcionProtocol, completeAbsorcionBonus, recordSymptom, toggleVibration, handleLogout, pwa }
 
   return (
     <>
@@ -163,13 +163,14 @@ export default function App() {
 
       {viewer && (
         <Viewer
+          key={`${viewer.type}-${viewer.id}`}
           viewer={viewer}
           appState={appState}
           onComplete={
-            viewer.type === 'lesson'          ? completeLesson :
-            viewer.type === 'bonus'           ? completeBonus  :
-            viewer.type === 'ritual-protocol' ? completeRitualProtocol :
-                                               completeRitualBonus
+            viewer.type === 'lesson'              ? completeLesson :
+            viewer.type === 'bonus'               ? completeBonus  :
+            viewer.type === 'absorcion-protocol'  ? completeAbsorcionProtocol :
+                                                    completeAbsorcionBonus
           }
           onClose={() => setViewer(null)}
         />

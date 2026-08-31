@@ -1,4 +1,5 @@
-import { LESSONS, BONOS, RITUAL_PROTOCOLS, RITUAL_BONUSES } from '../data'
+import { useState } from 'react'
+import { LESSONS, BONOS, ABSORCION_PROTOCOLS, ABSORCION_BONUSES } from '../data'
 import PDFCanvasViewer from './PDFCanvasViewer'
 
 function BackIcon() {
@@ -40,6 +41,41 @@ function NoPdfPlaceholder({ icon, subtitle }) {
   )
 }
 
+function RevealScreen({ onReveal }) {
+  return (
+    <div
+      className="flex flex-col items-center justify-center h-full gap-6 px-8 text-center"
+      style={{ background: 'hsl(168 80% 8%)' }}
+    >
+      <span className="text-[3.5rem]">🔐</span>
+      <div>
+        <p
+          className="text-[.65rem] font-bold tracking-[.18em] uppercase mb-3"
+          style={{ color: 'hsl(42 70% 62%)' }}
+        >
+          Acceso exclusivo
+        </p>
+        <p
+          className="font-display font-bold text-[1.25rem] leading-snug text-balance mb-3"
+          style={{ color: 'hsl(42 85% 82%)' }}
+        >
+          Lo que estás a punto de ver fue lo más difícil de incluir aquí.
+        </p>
+        <p className="text-sm leading-relaxed" style={{ color: 'hsl(168 25% 52%)' }}>
+          Este material no se comparte públicamente. Tienes acceso porque confiamos en que lo usarás bien.
+        </p>
+      </div>
+      <button
+        onClick={onReveal}
+        className="px-8 py-4 rounded-[14px] font-semibold text-sm transition-all active:scale-[.96]"
+        style={{ background: 'hsl(42 70% 50%)', color: 'hsl(168 80% 8%)' }}
+      >
+        Revelar el contenido →
+      </button>
+    </div>
+  )
+}
+
 function resolveViewer(type, id, appState) {
   switch (type) {
     case 'lesson':
@@ -56,19 +92,19 @@ function resolveViewer(type, id, appState) {
         eyebrow: BONOS[id]?.tag,
         doneLabel: 'Bono revisado',
       }
-    case 'ritual-protocol':
+    case 'absorcion-protocol':
       return {
-        item: RITUAL_PROTOCOLS[id],
-        isDone: appState.ritualProtocols?.[id],
-        eyebrow: 'Ritual Activador Ácido',
+        item: ABSORCION_PROTOCOLS[id],
+        isDone: appState.absorcionProtocols?.[id],
+        eyebrow: 'Protocolo Absorción Máxima',
         doneLabel: 'Protocolo completado',
       }
-    case 'ritual-bonus':
+    case 'absorcion-bonus':
       return {
-        item: RITUAL_BONUSES[id],
-        isDone: appState.ritualBonuses?.[id],
-        eyebrow: 'Bono del Ritual',
-        doneLabel: 'Bono revisado',
+        item: ABSORCION_BONUSES[id],
+        isDone: appState.absorcionBonuses?.[id],
+        eyebrow: ABSORCION_BONUSES[id]?.secret ? 'Acceso Exclusivo' : 'Bono Exclusivo',
+        doneLabel: 'Bono completado',
       }
     default:
       return { item: null, isDone: false, eyebrow: '', doneLabel: 'Completado' }
@@ -79,9 +115,11 @@ export default function Viewer({ viewer, appState, onComplete, onClose }) {
   const { type, id } = viewer
   const { item, isDone, eyebrow, doneLabel } = resolveViewer(type, id, appState)
 
-  if (!item) return null
+  const isAbsorcion = type === 'absorcion-protocol' || type === 'absorcion-bonus'
+  const isSecret = item?.secret === true
+  const [revealed, setRevealed] = useState(false)
 
-  const isRitual = type === 'ritual-protocol' || type === 'ritual-bonus'
+  if (!item) return null
 
   return (
     <div
@@ -108,7 +146,7 @@ export default function Viewer({ viewer, appState, onComplete, onClose }) {
         <div className="flex-1 min-w-0">
           <p
             className="text-[.65rem] font-bold tracking-widest uppercase"
-            style={{ color: isRitual ? 'hsl(var(--accent))' : 'hsl(var(--primary))' }}
+            style={{ color: isAbsorcion ? 'hsl(168 50% 28%)' : 'hsl(var(--primary))' }}
           >
             {eyebrow}
           </p>
@@ -125,9 +163,9 @@ export default function Viewer({ viewer, appState, onComplete, onClose }) {
             download
             className="w-10 h-10 shrink-0 rounded-full border flex items-center justify-center transition-all active:scale-[.92]"
             style={{
-              background: isRitual ? 'hsl(var(--accent-pale))' : 'hsl(var(--green-pale))',
-              borderColor: isRitual ? 'hsl(var(--accent) / .3)' : 'hsl(var(--primary) / .3)',
-              color: isRitual ? 'hsl(var(--accent))' : 'hsl(var(--primary))',
+              background: isAbsorcion ? 'hsl(168 40% 92%)' : 'hsl(var(--green-pale))',
+              borderColor: isAbsorcion ? 'hsl(168 50% 28% / .3)' : 'hsl(var(--primary) / .3)',
+              color: isAbsorcion ? 'hsl(168 50% 28%)' : 'hsl(var(--primary))',
             }}
             aria-label="Descargar archivo PDF"
             title="Descargar archivo PDF"
@@ -139,36 +177,46 @@ export default function Viewer({ viewer, appState, onComplete, onClose }) {
 
       {/* Content area */}
       <div className="flex-1 min-h-0 overflow-hidden">
-        {item.pdf ? (
+        {isSecret && !revealed ? (
+          <RevealScreen onReveal={() => setRevealed(true)} />
+        ) : item.pdf ? (
           <PDFCanvasViewer pdfUrl={item.pdf} title={item.title} />
         ) : (
           <NoPdfPlaceholder icon={item.icon ?? '📄'} subtitle={item.subtitle ?? item.desc ?? item.title} />
         )}
       </div>
 
-      {/* Footer — complete button */}
-      <div
-        className="px-4 py-3.5 border-t shrink-0 z-10"
-        style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--background))' }}
-      >
-        <button
-          onClick={() => !isDone && onComplete(id)}
-          disabled={isDone}
-          className="w-full flex items-center justify-center gap-2.5 py-[15px] rounded-[14px] font-semibold text-base transition-all active:scale-[.97]"
-          style={
-            isDone
-              ? { background: isRitual ? 'hsl(var(--accent-pale))' : 'hsl(var(--green-pale))', color: isRitual ? 'hsl(var(--accent))' : 'hsl(var(--primary))', cursor: 'default' }
-              : {
-                  background: isRitual ? 'hsl(36 66% 42%)' : 'hsl(128 28% 36%)',
-                  color: '#fff',
-                  boxShadow: isRitual ? '0 4px 16px hsl(36 66% 42% / .3)' : '0 4px 16px hsl(128 28% 36% / .3)',
-                }
-          }
+      {/* Footer — hidden while on reveal screen */}
+      {(!isSecret || revealed) && (
+        <div
+          className="px-4 py-3.5 border-t shrink-0 z-10"
+          style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--background))' }}
         >
-          <CheckIcon />
-          {isDone ? doneLabel : 'Marcar como completado'}
-        </button>
-      </div>
+          <button
+            onClick={() => !isDone && onComplete(id)}
+            disabled={isDone}
+            className="w-full flex items-center justify-center gap-2.5 py-[15px] rounded-[14px] font-semibold text-base transition-all active:scale-[.97]"
+            style={
+              isDone
+                ? {
+                    background: isAbsorcion ? 'hsl(168 40% 92%)' : 'hsl(var(--green-pale))',
+                    color: isAbsorcion ? 'hsl(168 50% 28%)' : 'hsl(var(--primary))',
+                    cursor: 'default',
+                  }
+                : {
+                    background: isAbsorcion ? 'hsl(168 55% 26%)' : 'hsl(128 28% 36%)',
+                    color: '#fff',
+                    boxShadow: isAbsorcion
+                      ? '0 4px 16px hsl(168 55% 26% / .3)'
+                      : '0 4px 16px hsl(128 28% 36% / .3)',
+                  }
+            }
+          >
+            <CheckIcon />
+            {isDone ? doneLabel : 'Marcar como completado'}
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -383,8 +383,8 @@ export default function Usuario({ appState, handlers, setTab }) {
           <OfferCard
             icon="🧪"
             tag="Programa de Apoyo"
-            title="Ritual Activador Ácido"
-            description="7 materiales incluidos con tu programa: 4 protocolos y 3 bonos exclusivos para potenciar tus resultados. Disponible ahora."
+            title="Protocolo Absorción Máxima"
+            description="6 materiales exclusivos para maximizar la acción del vinagre: 3 protocolos, 2 bonos y 1 acceso secreto. Disponible ahora."
             unlocked={true}
             onCta={() => setTab('bonos')}
           />

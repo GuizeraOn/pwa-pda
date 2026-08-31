@@ -1,4 +1,4 @@
-import { BONOS, RITUAL_PROTOCOLS, RITUAL_BONUSES } from '../data'
+import { BONOS, ABSORCION_PROTOCOLS, ABSORCION_BONUSES } from '../data'
 
 function ChevronRight() {
   return (
@@ -8,72 +8,162 @@ function ChevronRight() {
   )
 }
 
-// ── Ritual Activador Ácido — protocol grid card (2×2) ────────────────────────
+// ── Absorción Máxima — large protocol card (full width) ───────────────────────
 
-function RitualProtocolCard({ item, done, onOpen }) {
+function LargeProtocolCard({ item, done, onOpen }) {
+  return (
+    <button
+      onClick={onOpen}
+      className="w-full flex flex-col p-5 rounded-[18px] text-left transition-all active:scale-[.97] relative overflow-hidden"
+      style={{
+        background: done
+          ? 'hsl(168 40% 88%)'
+          : 'linear-gradient(135deg, hsl(168 45% 92%), hsl(168 38% 86%))',
+        border: done
+          ? '1.5px solid hsl(168 40% 68%)'
+          : '1.5px solid hsl(168 38% 78%)',
+      }}
+    >
+      {done && (
+        <span
+          className="absolute top-3 right-3 text-[.6rem] font-bold tracking-wide px-2 py-0.5 rounded-full"
+          style={{ background: 'hsl(168 48% 30%)', color: '#fff' }}
+        >
+          ✓ Completado
+        </span>
+      )}
+      <span className="text-[1.8rem] mb-3">{item.icon}</span>
+      <p className="font-display font-bold text-[1rem] leading-snug text-balance" style={{ color: 'hsl(168 42% 14%)' }}>
+        {item.title}
+      </p>
+      <p className="text-[.78rem] mt-1.5 mb-3" style={{ color: 'hsl(168 32% 38%)' }}>
+        {item.subtitle}
+      </p>
+      <span
+        className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-full self-start"
+        style={{ background: 'hsl(168 40% 82%)', color: 'hsl(168 48% 22%)' }}
+      >
+        Ver guía <ChevronRight />
+      </span>
+    </button>
+  )
+}
+
+// ── Absorción Máxima — small protocol card (2×2 grid) ────────────────────────
+
+function SmallProtocolCard({ item, done, onOpen }) {
   return (
     <button
       onClick={onOpen}
       className="flex flex-col items-start p-4 rounded-[18px] text-left transition-all active:scale-[.96] relative overflow-hidden"
       style={{
         background: done
-          ? 'hsl(36 55% 88%)'
-          : 'linear-gradient(145deg, hsl(36 70% 94%), hsl(38 60% 88%))',
+          ? 'hsl(168 40% 88%)'
+          : 'linear-gradient(145deg, hsl(168 42% 94%), hsl(168 36% 88%))',
         border: done
-          ? '1.5px solid hsl(36 55% 70%)'
-          : '1.5px solid hsl(36 60% 80%)',
+          ? '1.5px solid hsl(168 40% 68%)'
+          : '1.5px solid hsl(168 35% 80%)',
       }}
     >
       {done && (
         <span
-          className="absolute top-2.5 right-2.5 text-[.6rem] font-bold tracking-wide px-1.5 py-0.5 rounded-full"
-          style={{ background: 'hsl(36 60% 50%)', color: '#fff' }}
+          className="absolute top-2.5 right-2.5 text-[.6rem] font-bold px-1.5 py-0.5 rounded-full"
+          style={{ background: 'hsl(168 48% 30%)', color: '#fff' }}
         >
           ✓
         </span>
       )}
       <span className="text-[1.6rem] mb-2">{item.icon}</span>
-      <p className="font-display font-bold text-[.9rem] leading-snug text-balance" style={{ color: 'hsl(28 40% 22%)' }}>
+      <p className="font-display font-bold text-[.9rem] leading-snug text-balance" style={{ color: 'hsl(168 42% 14%)' }}>
         {item.title}
       </p>
-      <p className="text-[.72rem] mt-1" style={{ color: 'hsl(28 30% 42%)' }}>
+      <p className="text-[.72rem] mt-1" style={{ color: 'hsl(168 32% 38%)' }}>
         {item.subtitle}
       </p>
     </button>
   )
 }
 
-// ── Ritual Activador Ácido — bonus list card ──────────────────────────────────
+// ── Absorción Máxima — regular bonus list card ────────────────────────────────
 
-function RitualBonusCard({ item, done, onOpen }) {
+function AbsorcionBonusCard({ item, done, onOpen }) {
   return (
     <button
       onClick={onOpen}
       className="w-full flex items-center gap-4 p-4 rounded-[18px] text-left transition-all active:scale-[.97]"
       style={{
         background: done
-          ? 'hsl(36 55% 88%)'
-          : 'linear-gradient(135deg, hsl(36 65% 92%), hsl(38 55% 86%))',
-        border: '1.5px solid hsl(36 55% 78%)',
+          ? 'hsl(168 40% 88%)'
+          : 'linear-gradient(135deg, hsl(168 38% 92%), hsl(168 30% 86%))',
+        border: '1.5px solid hsl(168 35% 78%)',
       }}
     >
       <div
         className="w-12 h-12 shrink-0 rounded-[14px] flex items-center justify-center text-[1.4rem]"
-        style={{ background: 'rgba(180,110,30,.15)' }}
+        style={{ background: 'hsl(168 42% 30% / .12)' }}
       >
         {item.icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-display font-bold text-[.95rem] leading-snug" style={{ color: 'hsl(28 40% 22%)' }}>
+        <p className="font-display font-bold text-[.95rem] leading-snug" style={{ color: 'hsl(168 42% 14%)' }}>
           {item.title}
         </p>
-        <p className="text-xs mt-0.5" style={{ color: 'hsl(28 30% 44%)' }}>
+        <p className="text-xs mt-0.5" style={{ color: 'hsl(168 32% 38%)' }}>
           {item.subtitle}
         </p>
       </div>
       {done
-        ? <span className="text-xs font-bold shrink-0" style={{ color: 'hsl(36 60% 42%)' }}>✓ Visto</span>
-        : <span style={{ color: 'hsl(36 55% 50%)' }}><ChevronRight /></span>
+        ? <span className="text-xs font-bold shrink-0" style={{ color: 'hsl(168 48% 30%)' }}>✓ Visto</span>
+        : <span style={{ color: 'hsl(168 38% 48%)' }}><ChevronRight /></span>
+      }
+    </button>
+  )
+}
+
+// ── Absorción Máxima — El Día Cero (secret card) ─────────────────────────────
+
+function SecretCard({ item, done, onOpen }) {
+  return (
+    <button
+      onClick={onOpen}
+      className="w-full flex items-center gap-4 p-4 rounded-[18px] text-left transition-all active:scale-[.97] relative overflow-hidden"
+      style={{
+        background: done ? 'hsl(168 60% 14%)' : 'hsl(168 80% 8%)',
+        border: '1.5px solid hsl(168 55% 18%)',
+      }}
+    >
+      {/* Gold shimmer accent */}
+      <div
+        aria-hidden="true"
+        className="absolute top-0 right-0 w-28 h-28 rounded-full pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle, hsl(42 70% 50% / .08) 0%, transparent 70%)',
+          transform: 'translate(35%, -35%)',
+        }}
+      />
+      <div
+        className="w-12 h-12 shrink-0 rounded-[14px] flex items-center justify-center text-[1.4rem] relative"
+        style={{ background: 'hsl(42 70% 50% / .15)', border: '1px solid hsl(42 65% 50% / .25)' }}
+      >
+        {item.icon}
+      </div>
+      <div className="flex-1 min-w-0 relative">
+        <span
+          className="inline-block text-[.55rem] font-bold tracking-[.15em] uppercase px-2 py-0.5 rounded-full mb-1.5"
+          style={{ background: 'hsl(42 75% 50% / .18)', color: 'hsl(42 80% 72%)' }}
+        >
+          EXCLUSIVO
+        </span>
+        <p className="font-display font-bold text-[.95rem] leading-snug" style={{ color: 'hsl(42 85% 80%)' }}>
+          {item.title}
+        </p>
+        <p className="text-xs mt-0.5" style={{ color: 'hsl(168 25% 48%)' }}>
+          {item.subtitle}
+        </p>
+      </div>
+      {done
+        ? <span className="text-xs font-bold shrink-0" style={{ color: 'hsl(42 75% 65%)' }}>✓ Visto</span>
+        : <span style={{ color: 'hsl(168 35% 46%)' }}><ChevronRight /></span>
       }
     </button>
   )
@@ -122,7 +212,7 @@ function MainBonoCard({ bono, done, onOpen, delay }) {
   )
 }
 
-// ── Section header ────────────────────────────────────────────────────────────
+// ── Section label ─────────────────────────────────────────────────────────────
 
 function SectionLabel({ children }) {
   return (
@@ -135,28 +225,30 @@ function SectionLabel({ children }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function Bonos({ appState, setViewer }) {
-  const { bonuses, ritualProtocols, ritualBonuses } = appState
+  const { bonuses, absorcionProtocols, absorcionBonuses } = appState
 
-  const ritualDone   = ritualProtocols.every(Boolean) && ritualBonuses.every(Boolean)
-  const ritualCount  = ritualProtocols.filter(Boolean).length + ritualBonuses.filter(Boolean).length
+  const absorcionCount = absorcionProtocols.filter(Boolean).length + absorcionBonuses.filter(Boolean).length
+
+  const largeProtocols  = ABSORCION_PROTOCOLS.filter(p => p.size === 'large')
+  const smallProtocols  = ABSORCION_PROTOCOLS.filter(p => p.size === 'small')
+  const regularBonuses  = ABSORCION_BONUSES.filter(b => !b.secret)
+  const secretBonus     = ABSORCION_BONUSES.find(b => b.secret)
 
   return (
     <div className="animate-fade pb-4">
 
-      {/* ── BLOCO ÂMBAR — Ritual Activador Ácido ───────────────────── */}
+      {/* ── BLOCO TEAL — Protocolo Absorción Máxima ────────────── */}
       <div
         className="mx-4 mt-5 mb-4 rounded-[24px] overflow-hidden"
         style={{
-          border: '1.5px solid hsl(36 55% 72%)',
-          boxShadow: '0 6px 28px hsl(36 60% 50% / .14)',
+          border: '1.5px solid hsl(168 38% 70%)',
+          boxShadow: '0 6px 28px hsl(168 55% 26% / .12)',
         }}
       >
-        {/* Header âmbar */}
+        {/* Header teal */}
         <div
           className="px-5 pt-5 pb-4"
-          style={{
-            background: 'linear-gradient(135deg, hsl(36 70% 46%), hsl(28 65% 36%))',
-          }}
+          style={{ background: 'linear-gradient(135deg, hsl(168 55% 26%), hsl(172 48% 18%))' }}
         >
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -164,55 +256,78 @@ export default function Bonos({ appState, setViewer }) {
                 Acceso especial incluido
               </p>
               <h2 className="font-display font-bold text-[1.25rem] leading-tight text-white">
-                🧪 Ritual Activador Ácido
+                🧪 Protocolo Absorción Máxima
               </h2>
               <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,.8)' }}>
-                Programa completo · 7 materiales incluidos
+                Maximiza la acción del vinagre · 6 materiales
               </p>
             </div>
-            {/* Progress pill */}
             <div
               className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full mt-1"
               style={{ background: 'rgba(255,255,255,.2)', color: 'white' }}
             >
-              {ritualCount}/7
+              {absorcionCount}/6
             </div>
           </div>
         </div>
 
-        {/* Protocol grid 2×2 */}
-        <div className="px-4 pt-4 pb-2" style={{ background: 'hsl(38 80% 97%)' }}>
+        {/* Content area teal pale */}
+        <div className="px-4 pt-4 pb-4" style={{ background: 'hsl(168 40% 97%)' }}>
+
           <SectionLabel>Protocolos</SectionLabel>
-          <div className="grid grid-cols-2 gap-2.5 mb-4">
-            {RITUAL_PROTOCOLS.map((p, i) => (
-              <RitualProtocolCard
+
+          {/* Large protocol card */}
+          <div className="flex flex-col gap-2.5 mb-3">
+            {largeProtocols.map(p => (
+              <LargeProtocolCard
                 key={p.id}
                 item={p}
-                done={ritualProtocols[i]}
-                onOpen={() => setViewer({ type: 'ritual-protocol', id: i })}
+                done={absorcionProtocols[p.id]}
+                onOpen={() => setViewer({ type: 'absorcion-protocol', id: p.id })}
               />
             ))}
           </div>
 
-          {/* Ritual bonuses list */}
-          <SectionLabel>Bonos del Ritual</SectionLabel>
-          <div className="flex flex-col gap-2.5 pb-4">
-            {RITUAL_BONUSES.map((b, i) => (
-              <RitualBonusCard
+          {/* Small protocol 2-col grid */}
+          {smallProtocols.length > 0 && (
+            <div className="grid grid-cols-2 gap-2.5 mb-4">
+              {smallProtocols.map(p => (
+                <SmallProtocolCard
+                  key={p.id}
+                  item={p}
+                  done={absorcionProtocols[p.id]}
+                  onOpen={() => setViewer({ type: 'absorcion-protocol', id: p.id })}
+                />
+              ))}
+            </div>
+          )}
+
+          <SectionLabel>Bonos del Protocolo</SectionLabel>
+
+          <div className="flex flex-col gap-2.5">
+            {regularBonuses.map(b => (
+              <AbsorcionBonusCard
                 key={b.id}
                 item={b}
-                done={ritualBonuses[i]}
-                onOpen={() => setViewer({ type: 'ritual-bonus', id: i })}
+                done={absorcionBonuses[b.id]}
+                onOpen={() => setViewer({ type: 'absorcion-bonus', id: b.id })}
               />
             ))}
+            {secretBonus && (
+              <SecretCard
+                item={secretBonus}
+                done={absorcionBonuses[secretBonus.id]}
+                onOpen={() => setViewer({ type: 'absorcion-bonus', id: secretBonus.id })}
+              />
+            )}
           </div>
         </div>
       </div>
 
-      {/* ── BLOCO SAGE GREEN — Bonos del Protocolo ─────────────────── */}
+      {/* ── BLOCO SAGE GREEN — Bonos del Protocolo del Vinagre ── */}
       <div className="px-4 mt-2">
         <p className="text-[.65rem] font-bold tracking-[.15em] uppercase mb-3 px-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
-          Bonos del Protocolo
+          Bonos del Protocolo del Vinagre
         </p>
         <div className="flex flex-col gap-3.5">
           {BONOS.map((bono, i) => (

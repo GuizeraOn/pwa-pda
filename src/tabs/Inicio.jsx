@@ -305,18 +305,18 @@ function NextLessonBlock({ lessons, setViewer }) {
   )
 }
 
-// ── Block 8b: Ritual discovery card ──────────────────────────────────────────
-// Aparece a partir do dia 3, uma vez por sessão. Amber, navega para aba Bonos.
+// ── Block 8b: Absorción Máxima discovery card ────────────────────────────────
+// Aparece a partir do dia 3, uma vez por sessão. Teal, navega para aba Bonos.
 
-function RitualDiscoveryCard({ onGoToBonos }) {
+function AbsorcionDiscoveryCard({ onGoToBonos }) {
   const [dismissed, setDismissed] = useState(() => {
-    try { return sessionStorage.getItem('ritual_seen') === '1' } catch { return false }
+    try { return sessionStorage.getItem('absorcion_seen') === '1' } catch { return false }
   })
 
   if (dismissed) return null
 
   const dismiss = () => {
-    try { sessionStorage.setItem('ritual_seen', '1') } catch {}
+    try { sessionStorage.setItem('absorcion_seen', '1') } catch {}
     setDismissed(true)
   }
 
@@ -324,8 +324,8 @@ function RitualDiscoveryCard({ onGoToBonos }) {
     <div
       className="mx-4 rounded-[20px] p-5 relative overflow-hidden"
       style={{
-        background: 'linear-gradient(135deg, hsl(36 70% 46%), hsl(28 65% 36%))',
-        boxShadow: '0 6px 24px hsl(36 60% 42% / .25)',
+        background: 'linear-gradient(135deg, hsl(168 55% 26%), hsl(172 48% 18%))',
+        boxShadow: '0 6px 24px hsl(168 55% 26% / .22)',
       }}
     >
       {/* Dismiss */}
@@ -342,10 +342,10 @@ function RitualDiscoveryCard({ onGoToBonos }) {
         ✨ Acceso especial incluido
       </p>
       <p className="font-display font-bold text-[1.1rem] leading-snug text-white text-balance mb-1">
-        Tienes el Ritual Activador Ácido disponible para potenciar tus resultados desde hoy.
+        El Protocolo Absorción Máxima está listo para maximizar tu resultado desde hoy.
       </p>
       <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,.8)' }}>
-        7 materiales de apoyo · incluido con tu programa
+        6 materiales exclusivos · incluido con tu programa
       </p>
 
       <button
@@ -353,7 +353,7 @@ function RitualDiscoveryCard({ onGoToBonos }) {
         className="flex items-center gap-2 px-5 py-3 rounded-[12px] font-semibold text-sm transition-all active:scale-[.96]"
         style={{ background: 'rgba(255,255,255,.22)', color: 'white' }}
       >
-        Ver el Ritual →
+        Ver el Protocolo →
       </button>
     </div>
   )
@@ -509,10 +509,10 @@ export default function Inicio({ appState, handlers, setViewer, setTab }) {
             <NextLessonBlock lessons={lessons} setViewer={setViewer} />
           </BloomBlock>
 
-          {/* 8b — Ritual discovery (day 3+, once per session) */}
+          {/* 8b — Absorción discovery (day 3+, once per session) */}
           {day >= 3 && (
             <BloomBlock delay={nextDelay()} justBloomed={justBloomed}>
-              <RitualDiscoveryCard onGoToBonos={() => setTab('bonos')} />
+              <AbsorcionDiscoveryCard onGoToBonos={() => setTab('bonos')} />
             </BloomBlock>
           )}
 
