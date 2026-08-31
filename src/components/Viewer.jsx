@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { LESSONS, BONOS, ABSORCION_PROTOCOLS, ABSORCION_BONUSES } from '../data'
+import { LESSONS, BONOS, ABSORCION_PROTOCOLS, ABSORCION_BONUSES, RITUAL_PROTOCOLS, RITUAL_BONUSES } from '../data'
 import PDFCanvasViewer from './PDFCanvasViewer'
 
 function BackIcon() {
@@ -106,6 +106,20 @@ function resolveViewer(type, id, appState) {
         eyebrow: ABSORCION_BONUSES[id]?.secret ? 'Acceso Exclusivo' : 'Bono Exclusivo',
         doneLabel: 'Bono completado',
       }
+    case 'ritual-protocol':
+      return {
+        item: RITUAL_PROTOCOLS[id],
+        isDone: appState.ritualProtocols?.[id],
+        eyebrow: 'Ritual Activador Ácido',
+        doneLabel: 'Protocolo completado',
+      }
+    case 'ritual-bonus':
+      return {
+        item: RITUAL_BONUSES[id],
+        isDone: appState.ritualBonuses?.[id],
+        eyebrow: 'Bono del Ritual',
+        doneLabel: 'Bono revisado',
+      }
     default:
       return { item: null, isDone: false, eyebrow: '', doneLabel: 'Completado' }
   }
@@ -116,7 +130,18 @@ export default function Viewer({ viewer, appState, onComplete, onClose }) {
   const { item, isDone, eyebrow, doneLabel } = resolveViewer(type, id, appState)
 
   const isAbsorcion = type === 'absorcion-protocol' || type === 'absorcion-bonus'
+  const isRitual    = type === 'ritual-protocol'    || type === 'ritual-bonus'
   const isSecret = item?.secret === true
+
+  // Color tokens per theme
+  const eyebrowColor  = isAbsorcion ? 'hsl(168 50% 28%)' : isRitual ? 'hsl(36 60% 38%)' : 'hsl(var(--primary))'
+  const dlBg          = isAbsorcion ? 'hsl(168 40% 92%)' : isRitual ? 'hsl(var(--accent-pale))' : 'hsl(var(--green-pale))'
+  const dlBorder      = isAbsorcion ? 'hsl(168 50% 28% / .3)' : isRitual ? 'hsl(var(--accent) / .3)' : 'hsl(var(--primary) / .3)'
+  const dlColor       = isAbsorcion ? 'hsl(168 50% 28%)' : isRitual ? 'hsl(var(--accent))' : 'hsl(var(--primary))'
+  const btnActiveBg   = isAbsorcion ? 'hsl(168 55% 26%)' : isRitual ? 'hsl(36 66% 42%)' : 'hsl(128 28% 36%)'
+  const btnActiveShadow = isAbsorcion ? 'hsl(168 55% 26% / .3)' : isRitual ? 'hsl(36 66% 42% / .3)' : 'hsl(128 28% 36% / .3)'
+  const btnDoneBg     = isAbsorcion ? 'hsl(168 40% 92%)' : isRitual ? 'hsl(var(--accent-pale))' : 'hsl(var(--green-pale))'
+  const btnDoneColor  = isAbsorcion ? 'hsl(168 50% 28%)' : isRitual ? 'hsl(var(--accent))' : 'hsl(var(--primary))'
   const [revealed, setRevealed] = useState(false)
 
   if (!item) return null
@@ -146,7 +171,7 @@ export default function Viewer({ viewer, appState, onComplete, onClose }) {
         <div className="flex-1 min-w-0">
           <p
             className="text-[.65rem] font-bold tracking-widest uppercase"
-            style={{ color: isAbsorcion ? 'hsl(168 50% 28%)' : 'hsl(var(--primary))' }}
+            style={{ color: eyebrowColor }}
           >
             {eyebrow}
           </p>
@@ -162,11 +187,7 @@ export default function Viewer({ viewer, appState, onComplete, onClose }) {
             rel="noopener noreferrer"
             download
             className="w-10 h-10 shrink-0 rounded-full border flex items-center justify-center transition-all active:scale-[.92]"
-            style={{
-              background: isAbsorcion ? 'hsl(168 40% 92%)' : 'hsl(var(--green-pale))',
-              borderColor: isAbsorcion ? 'hsl(168 50% 28% / .3)' : 'hsl(var(--primary) / .3)',
-              color: isAbsorcion ? 'hsl(168 50% 28%)' : 'hsl(var(--primary))',
-            }}
+            style={{ background: dlBg, borderColor: dlBorder, color: dlColor }}
             aria-label="Descargar archivo PDF"
             title="Descargar archivo PDF"
           >
@@ -198,18 +219,8 @@ export default function Viewer({ viewer, appState, onComplete, onClose }) {
             className="w-full flex items-center justify-center gap-2.5 py-[15px] rounded-[14px] font-semibold text-base transition-all active:scale-[.97]"
             style={
               isDone
-                ? {
-                    background: isAbsorcion ? 'hsl(168 40% 92%)' : 'hsl(var(--green-pale))',
-                    color: isAbsorcion ? 'hsl(168 50% 28%)' : 'hsl(var(--primary))',
-                    cursor: 'default',
-                  }
-                : {
-                    background: isAbsorcion ? 'hsl(168 55% 26%)' : 'hsl(128 28% 36%)',
-                    color: '#fff',
-                    boxShadow: isAbsorcion
-                      ? '0 4px 16px hsl(168 55% 26% / .3)'
-                      : '0 4px 16px hsl(128 28% 36% / .3)',
-                  }
+                ? { background: btnDoneBg, color: btnDoneColor, cursor: 'default' }
+                : { background: btnActiveBg, color: '#fff', boxShadow: `0 4px 16px ${btnActiveShadow}` }
             }
           >
             <CheckIcon />

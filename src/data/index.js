@@ -82,6 +82,19 @@ export const ABSORCION_BONUSES = [
   { id: 2, title: 'El Día Cero',                  subtitle: 'El secreto que lo cambia todo',    icon: '🔐', secret: true,  pdf: null },
 ]
 
+export const RITUAL_PROTOCOLS = [
+  { id: 0, title: 'El Shot Activador',    subtitle: 'Ritual de 60 segundos',  icon: '💛', pdf: '/pdfs/ritual/Protocolo-Matutino-de-Limpieza-Pulmonar.pdf' },
+  { id: 1, title: 'Mapa de Alimentos',    subtitle: 'Apaga el fuego interno', icon: '🗺️', pdf: '/pdfs/ritual/Guia-Antiinflamatoria-para-tu-Protocolo-Respiratorio.pdf' },
+  { id: 2, title: 'La Ventana de 20 Min', subtitle: 'El timing exacto',       icon: '⏱️', pdf: '/pdfs/ritual/Sincronia-Metabolica-Guia-para-tu-Protocolo-de-Vinagre-y-Antiinflamatorios.pdf' },
+  { id: 3, title: 'Termómetro',           subtitle: 'Mide tu inflamación',    icon: '🌡️', pdf: '/pdfs/ritual/Guia-de-Autoevaluacion-Apagando-el-Fuego-Interno.pdf' },
+]
+
+export const RITUAL_BONUSES = [
+  { id: 0, title: 'Articulaciones Sin Fuego',          subtitle: 'Recupera tu movilidad', icon: '🦴', pdf: '/pdfs/ritual/De-la-Respiracion-al-Movimiento-Tu-Protocolo-de-Recuperacion-Integral.pdf' },
+  { id: 1, title: 'Audio de Respiración Regenerativa', subtitle: 'Ejercicio guiado',      icon: '🎧', pdf: null },
+  { id: 2, title: 'El Secreto del Día Cuatro',         subtitle: 'Bono exclusivo',        icon: '🔐', pdf: '/pdfs/ritual/El-bonus-que-nadie-te-da-el-ajuste-del-dia-4-que-despega-tu-limpieza-pulmonar.pdf' },
+]
+
 export const ACHIEVEMENTS = [
   { id: 'd1',   icon: '🌱', name: 'Primer Paso',       desc: 'Completaste tu primer día',     condition: (days) => days[0] },
   { id: 'w1',   icon: '⭐', name: 'Primera Semana',    desc: '7 días consecutivos',            condition: (days) => days.slice(0,7).every(Boolean) },

@@ -1,4 +1,5 @@
-import { BONOS, ABSORCION_PROTOCOLS, ABSORCION_BONUSES } from '../data'
+import { useState } from 'react'
+import { BONOS, ABSORCION_PROTOCOLS, ABSORCION_BONUSES, RITUAL_PROTOCOLS, RITUAL_BONUSES } from '../data'
 
 function ChevronRight() {
   return (
@@ -169,6 +170,61 @@ function SecretCard({ item, done, onOpen }) {
   )
 }
 
+// ── Ritual Activador Ácido — protocol grid card (2×2) ────────────────────────
+
+function RitualProtocolCard({ item, done, onOpen }) {
+  return (
+    <button
+      onClick={onOpen}
+      className="flex flex-col items-start p-4 rounded-[18px] text-left transition-all active:scale-[.96] relative overflow-hidden"
+      style={{
+        background: done ? 'hsl(36 55% 88%)' : 'linear-gradient(145deg, hsl(36 70% 94%), hsl(38 60% 88%))',
+        border: done ? '1.5px solid hsl(36 55% 70%)' : '1.5px solid hsl(36 60% 80%)',
+      }}
+    >
+      {done && (
+        <span className="absolute top-2.5 right-2.5 text-[.6rem] font-bold px-1.5 py-0.5 rounded-full"
+          style={{ background: 'hsl(36 60% 50%)', color: '#fff' }}>✓</span>
+      )}
+      <span className="text-[1.6rem] mb-2">{item.icon}</span>
+      <p className="font-display font-bold text-[.9rem] leading-snug text-balance" style={{ color: 'hsl(28 40% 22%)' }}>
+        {item.title}
+      </p>
+      <p className="text-[.72rem] mt-1" style={{ color: 'hsl(28 30% 42%)' }}>{item.subtitle}</p>
+    </button>
+  )
+}
+
+// ── Ritual Activador Ácido — bonus list card ──────────────────────────────────
+
+function RitualBonusCard({ item, done, onOpen }) {
+  return (
+    <button
+      onClick={onOpen}
+      className="w-full flex items-center gap-4 p-4 rounded-[18px] text-left transition-all active:scale-[.97]"
+      style={{
+        background: done ? 'hsl(36 55% 88%)' : 'linear-gradient(135deg, hsl(36 65% 92%), hsl(38 55% 86%))',
+        border: '1.5px solid hsl(36 55% 78%)',
+      }}
+    >
+      <div className="w-12 h-12 shrink-0 rounded-[14px] flex items-center justify-center text-[1.4rem]"
+        style={{ background: 'rgba(180,110,30,.15)' }}>
+        {item.icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-display font-bold text-[.95rem] leading-snug" style={{ color: 'hsl(28 40% 22%)' }}>
+          {item.title}
+        </p>
+        <p className="text-xs mt-0.5" style={{ color: 'hsl(28 30% 44%)' }}>{item.subtitle}</p>
+      </div>
+      {done
+        ? <span className="text-xs font-bold shrink-0" style={{ color: 'hsl(36 60% 42%)' }}>✓ Visto</span>
+        : <span style={{ color: 'hsl(36 55% 50%)' }}><ChevronRight /></span>
+      }
+    </button>
+  )
+}
+
 // ── Protocolo principal — lista card (estilo original) ───────────────────────
 
 function MainBonoCard({ bono, done, onOpen, delay }) {
@@ -225,14 +281,17 @@ function SectionLabel({ children }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function Bonos({ appState, setViewer }) {
-  const { bonuses, absorcionProtocols, absorcionBonuses } = appState
+  const { bonuses, absorcionProtocols, absorcionBonuses, ritualProtocols, ritualBonuses } = appState
 
   const absorcionCount = absorcionProtocols.filter(Boolean).length + absorcionBonuses.filter(Boolean).length
+  const ritualCount    = ritualProtocols.filter(Boolean).length + ritualBonuses.filter(Boolean).length
 
   const largeProtocols  = ABSORCION_PROTOCOLS.filter(p => p.size === 'large')
   const smallProtocols  = ABSORCION_PROTOCOLS.filter(p => p.size === 'small')
   const regularBonuses  = ABSORCION_BONUSES.filter(b => !b.secret)
   const secretBonus     = ABSORCION_BONUSES.find(b => b.secret)
+
+  const [ritualOpen, setRitualOpen] = useState(false)
 
   return (
     <div className="animate-fade pb-4">
@@ -322,6 +381,78 @@ export default function Bonos({ appState, setViewer }) {
             )}
           </div>
         </div>
+      </div>
+
+      {/* ── BLOCO ÂMBAR — Ritual Activador Ácido (colapsável) ── */}
+      <div
+        className="mx-4 mb-4 rounded-[24px] overflow-hidden"
+        style={{
+          border: '1.5px solid hsl(36 55% 72%)',
+          boxShadow: '0 4px 20px hsl(36 60% 50% / .10)',
+        }}
+      >
+        {/* Header — clicável para abrir/fechar */}
+        <button
+          onClick={() => setRitualOpen(o => !o)}
+          className="w-full px-5 py-4 flex items-center justify-between gap-3 text-left"
+          style={{ background: 'linear-gradient(135deg, hsl(36 70% 46%), hsl(28 65% 36%))' }}
+        >
+          <div>
+            <p className="text-[.6rem] font-bold tracking-[.18em] uppercase mb-1" style={{ color: 'rgba(255,255,255,.7)' }}>
+              Incluido con tu programa
+            </p>
+            <h3 className="font-display font-bold text-[1.1rem] leading-tight text-white">
+              🔥 Ritual Activador Ácido
+            </h3>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,.8)' }}>
+              Protocolo completo · 7 materiales
+            </p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <span
+              className="text-xs font-bold px-3 py-1 rounded-full"
+              style={{ background: 'rgba(255,255,255,.2)', color: 'white' }}
+            >
+              {ritualCount}/7
+            </span>
+            <svg
+              width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="rgba(255,255,255,.8)" strokeWidth="2.5"
+              style={{ transform: ritualOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .25s' }}
+            >
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </div>
+        </button>
+
+        {/* Conteúdo expandível */}
+        {ritualOpen && (
+          <div className="px-4 pt-4 pb-4" style={{ background: 'hsl(38 80% 97%)' }}>
+            <SectionLabel>Protocolos</SectionLabel>
+            <div className="grid grid-cols-2 gap-2.5 mb-4">
+              {RITUAL_PROTOCOLS.map((p) => (
+                <RitualProtocolCard
+                  key={p.id}
+                  item={p}
+                  done={ritualProtocols[p.id]}
+                  onOpen={() => setViewer({ type: 'ritual-protocol', id: p.id })}
+                />
+              ))}
+            </div>
+
+            <SectionLabel>Bonos del Ritual</SectionLabel>
+            <div className="flex flex-col gap-2.5">
+              {RITUAL_BONUSES.map((b) => (
+                <RitualBonusCard
+                  key={b.id}
+                  item={b}
+                  done={ritualBonuses[b.id]}
+                  onOpen={() => setViewer({ type: 'ritual-bonus', id: b.id })}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── BLOCO SAGE GREEN — Bonos del Protocolo del Vinagre ── */}
