@@ -33,7 +33,7 @@ export const LESSONS = [
     title: 'La Hora del Intestino',
     desc: 'El momento exacto que activa la absorción máxima',
     badge: 'Nuevo',
-    pdf: null,
+    pdf: '/pdfs/absorcion-maxima/Guia-de-Rescate-Intestinal-Protocolo-de-Eliminacion-y-Proteccion.pdf',
   },
 ]
 
@@ -71,15 +71,15 @@ export const BONOS = [
 ]
 
 export const ABSORCION_PROTOCOLS = [
-  { id: 0, title: 'El Protocolo de los 7 Días', subtitle: 'El núcleo · Plan día a día',       icon: '📋', size: 'large', pdf: null },
-  { id: 1, title: 'Mapa de Bactericidas',        subtitle: 'Alimentos que amplifican el ACV',  icon: '🗺️', size: 'small', pdf: null },
-  { id: 2, title: 'Test de la Microbiota',        subtitle: 'Evalúa tu nivel de partida',       icon: '🌡️', size: 'small', pdf: null },
+  { id: 0, title: 'El Protocolo de los 7 Días', subtitle: 'El núcleo · Plan día a día',       icon: '📋', size: 'large', pdf: '/pdfs/absorcion-maxima/Protocolo-de-Vitalidad-Pulmonar-Tu-Guia-de-7-Dias.pdf' },
+  { id: 1, title: 'Mapa de Bactericidas',        subtitle: 'Alimentos que amplifican el ACV',  icon: '🗺️', size: 'small', pdf: '/pdfs/absorcion-maxima/Guia-de-Optimizacion-Vinagre-de-Manzana-y-Restauracion-Intestinal.pdf' },
+  { id: 2, title: 'Test de la Microbiota',        subtitle: 'Evalúa tu nivel de partida',       icon: '🌡️', size: 'small', pdf: '/pdfs/absorcion-maxima/Tu-Mapa-Hacia-el-Bienestar-Guia-de-Autoevaluacion-Gut.pdf' },
 ]
 
 export const ABSORCION_BONUSES = [
-  { id: 0, title: 'Código Articular',            subtitle: 'Recupera tu flexibilidad natural', icon: '🦴', secret: false, pdf: null },
-  { id: 1, title: 'Truco de la Mente Despierta', subtitle: 'Optimiza tu foco y energía',       icon: '🧠', secret: false, pdf: null },
-  { id: 2, title: 'El Día Cero',                  subtitle: 'El secreto que lo cambia todo',    icon: '🔐', secret: true,  pdf: null },
+  { id: 0, title: 'Código Articular',            subtitle: 'Recupera tu flexibilidad natural', icon: '🦴', secret: false, pdf: '/pdfs/absorcion-maxima/Tu-Intestino-y-tus-Articulaciones-El-Eje-que-Define-tu-Movilidad.pdf' },
+  { id: 1, title: 'Truco de la Mente Despierta', subtitle: 'Optimiza tu foco y energía',       icon: '🧠', secret: false, pdf: '/pdfs/absorcion-maxima/Restauracion-Intestinal-El-Protocolo-para-tu-Segundo-Cerebro.pdf' },
+  { id: 2, title: 'El Día Cero',                  subtitle: 'El secreto que lo cambia todo',    icon: '🔐', secret: true,  pdf: '/pdfs/absorcion-maxima/Preparacion-Maestra-Tu-Guia-Secreta-para-el-Primer-Dia.pdf' },
 ]
 
 export const RITUAL_PROTOCOLS = [
