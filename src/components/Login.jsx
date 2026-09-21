@@ -28,15 +28,53 @@ function LeafDeco() {
 
 export default function Login({ onLogin, pwa }) {
   const [email, setEmail] = useState('')
-  const [error, setError] = useState(false)
+  const [fieldError, setFieldError] = useState(false)
+  const [loading, setLoading] = useState(false)
+  // 'idle' | 'denied' | 'server-error'
+  const [errorType, setErrorType] = useState(null)
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
-    if (email.includes('@') && email.includes('.')) {
-      onLogin(email.trim())
-    } else {
-      setError(true)
+    const trimmed = email.trim()
+
+    if (!trimmed.includes('@') || !trimmed.includes('.')) {
+      setFieldError(true)
+      return
     }
+
+    setLoading(true)
+    setErrorType(null)
+
+    try {
+      const res = await fetch('/api/check-purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmed }),
+      })
+
+      if (!res.ok) {
+        setErrorType('server-error')
+        setLoading(false)
+        return
+      }
+
+      const { authorized } = await res.json()
+      setLoading(false)
+
+      if (authorized) {
+        onLogin(trimmed)
+      } else {
+        setErrorType('denied')
+      }
+    } catch {
+      setErrorType('server-error')
+      setLoading(false)
+    }
+  }
+
+  const errorMessages = {
+    denied: 'No encontramos una compra aprobada con este correo. Verifica e inténtalo de nuevo.',
+    'server-error': 'Error al verificar el acceso. Por favor, inténtalo de nuevo.',
   }
 
   return (
@@ -104,30 +142,48 @@ export default function Login({ onLogin, pwa }) {
             inputMode="email"
             placeholder="nombre@correo.com"
             value={email}
-            onChange={e => { setEmail(e.target.value); setError(false) }}
+            disabled={loading}
+            onChange={e => {
+              setEmail(e.target.value)
+              setFieldError(false)
+              setErrorType(null)
+            }}
             className="w-full rounded-[14px] px-4 py-4 text-base outline-none transition-colors border-2 bg-background"
             style={{
-              borderColor: error ? 'hsl(var(--accent))' : 'hsl(var(--border))',
+              borderColor: (fieldError || errorType === 'denied') ? 'hsl(var(--accent))' : 'hsl(var(--border))',
               color: 'hsl(var(--foreground))',
+              opacity: loading ? 0.65 : 1,
             }}
             onFocus={e => e.target.style.borderColor = 'hsl(var(--primary))'}
-            onBlur={e => e.target.style.borderColor = error ? 'hsl(var(--accent))' : 'hsl(var(--border))'}
+            onBlur={e => {
+              const hasError = fieldError || errorType === 'denied'
+              e.target.style.borderColor = hasError ? 'hsl(var(--accent))' : 'hsl(var(--border))'
+            }}
           />
-          {error && (
+
+          {/* Error messages */}
+          {fieldError && (
             <p className="text-sm mt-2" style={{ color: 'hsl(var(--accent))' }}>
               Ingresa un correo válido para continuar
             </p>
           )}
+          {!fieldError && errorType && (
+            <p className="text-sm mt-2" style={{ color: 'hsl(var(--accent))' }}>
+              {errorMessages[errorType]}
+            </p>
+          )}
+
           <button
             type="submit"
-            className="w-full mt-5 py-[18px] rounded-[14px] font-semibold text-base tracking-wide transition-all active:scale-[.98]"
+            disabled={loading}
+            className="w-full mt-5 py-[18px] rounded-[14px] font-semibold text-base tracking-wide transition-all active:scale-[.98] disabled:opacity-60 disabled:cursor-not-allowed"
             style={{
               background: 'hsl(var(--primary))',
               color: 'hsl(var(--primary-foreground))',
               boxShadow: '0 4px 18px hsla(var(--primary) / .28)',
             }}
           >
-            Ingresar al Programa
+            {loading ? 'Verificando…' : 'Ingresar al Programa'}
           </button>
         </form>
 
@@ -136,10 +192,10 @@ export default function Login({ onLogin, pwa }) {
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
           </svg>
-          Acceso seguro y privado — solo para ti
+          Acceso exclusivo para compradores del programa
         </div>
 
-        {/* Install app shortcut button on Login screen */}
+        {/* Install app shortcut button */}
         {pwa && !pwa.isInstalled && (
           <button
             type="button"

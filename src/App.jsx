@@ -6,6 +6,35 @@ import InstallModal from './components/InstallModal'
 import { usePWAInstall } from './hooks/usePWAInstall'
 
 const STORAGE_KEY = 'protocolo_state'
+// Guarda o email verificado por 7 dias para não chamar a planilha toda vez
+const SESSION_KEY = 'protocolo_session'
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000
+
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY)
+    if (!raw) return null
+    const s = JSON.parse(raw)
+    if (!s.email || s.expiresAt < Date.now()) {
+      localStorage.removeItem(SESSION_KEY)
+      return null
+    }
+    return s.email
+  } catch { return null }
+}
+
+function saveSession(email) {
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({
+      email,
+      expiresAt: Date.now() + SESSION_TTL_MS,
+    }))
+  } catch {}
+}
+
+function clearSession() {
+  try { localStorage.removeItem(SESSION_KEY) } catch {}
+}
 
 function loadState(email) {
   try {
@@ -38,7 +67,7 @@ export default function App() {
   const [email, setEmail] = useState('')
   const [loggedIn, setLoggedIn] = useState(false)
   const [tab, setTab] = useState('inicio')
-  const [viewer, setViewer] = useState(null) // { type: 'lesson'|'bonus', id: number }
+  const [viewer, setViewer] = useState(null)
 
   const [day, setDay] = useState(1)
   const [days, setDays] = useState(() => Array(21).fill(false))
@@ -50,18 +79,15 @@ export default function App() {
   const [ritualBonuses, setRitualBonuses] = useState([false, false, false])
   const [symScores, setSymScores] = useState({})
 
-  // Device-level preference — not per-user, so stored globally
   const [vibrationEnabled, setVibrationEnabled] = useState(() => {
     try { return localStorage.getItem('protocolo_vibration') !== 'false' } catch { return true }
   })
 
-  // PWA Install management (3-layer logic)
   const pwa = usePWAInstall()
 
-  // Load persisted state when email is set
-  const handleLogin = useCallback((inputEmail) => {
-    setEmail(inputEmail)
-    const saved = loadState(inputEmail)
+  // ── Restaura sessão salva ao abrir o app ────────────────────────────
+  const applyUserState = useCallback((userEmail) => {
+    const saved = loadState(userEmail)
     if (saved) {
       setDay(saved.day)
       setDays(saved.days)
@@ -73,7 +99,6 @@ export default function App() {
       setRitualBonuses(saved.ritualBonuses || [false, false, false])
       setSymScores(saved.symScores || {})
     } else {
-      // Fresh start — keep demo state
       const initial = buildInitialState()
       setDay(initial.day)
       setDays(initial.days)
@@ -81,10 +106,26 @@ export default function App() {
       setBonuses(initial.bonuses)
       setSymScores({})
     }
-    setLoggedIn(true)
   }, [])
 
-  // Persist on every state change after login
+  useEffect(() => {
+    const savedEmail = loadSession()
+    if (savedEmail) {
+      setEmail(savedEmail)
+      applyUserState(savedEmail)
+      setLoggedIn(true)
+    }
+  }, [applyUserState])
+
+  // ── Login vindo do componente Login (email já verificado na planilha) ─
+  const handleLogin = useCallback((inputEmail) => {
+    saveSession(inputEmail)
+    setEmail(inputEmail)
+    applyUserState(inputEmail)
+    setLoggedIn(true)
+  }, [applyUserState])
+
+  // ── Persist on every state change after login ───────────────────────
   useEffect(() => {
     if (!loggedIn || !email) return
     saveState(email, { day, days, lessons, bonuses, absorcionProtocols, absorcionBonuses, ritualProtocols, ritualBonuses, symScores })
@@ -158,6 +199,7 @@ export default function App() {
   }, [])
 
   const handleLogout = useCallback(() => {
+    clearSession()
     setLoggedIn(false)
     setEmail('')
     setTab('inicio')
@@ -198,7 +240,6 @@ export default function App() {
         />
       )}
 
-      {/* Modal global de instalação com as 3 camadas / abas iOS e Android */}
       <InstallModal
         isOpen={pwa.isModalOpen}
         onClose={pwa.closeModal}
