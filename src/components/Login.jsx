@@ -26,6 +26,11 @@ function LeafDeco() {
   )
 }
 
+// ⚠️ TEMPORÁRIO: verificação de compra (Google Sheets via /api/check-purchase)
+// desativada. Qualquer e-mail com formato válido entra direto.
+// Para reativar, basta voltar esta flag para `true`.
+const VERIFICACION_COMPRA_ACTIVA = false
+
 export default function Login({ onLogin, pwa }) {
   const [email, setEmail] = useState('')
   const [fieldError, setFieldError] = useState(false)
@@ -39,6 +44,11 @@ export default function Login({ onLogin, pwa }) {
 
     if (!trimmed.includes('@') || !trimmed.includes('.')) {
       setFieldError(true)
+      return
+    }
+
+    if (!VERIFICACION_COMPRA_ACTIVA) {
+      onLogin(trimmed)
       return
     }
 
