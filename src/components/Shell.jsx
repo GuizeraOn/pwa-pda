@@ -1,8 +1,57 @@
+import { useState } from 'react'
 import Inicio from '../tabs/Inicio'
 import Protocolo from '../tabs/Protocolo'
 import Bonos from '../tabs/Bonos'
 import Progreso from '../tabs/Progreso'
 import Usuario from '../tabs/Usuario'
+import { RECIPE_ITEMS } from '../data'
+
+function RecipeSheet({ isOpen, onClose }) {
+  if (!isOpen) return null
+  return (
+    <>
+      <div onClick={onClose} className="fixed inset-0 z-[100]" style={{ background: 'rgba(0,0,0,.4)', backdropFilter: 'blur(3px)' }} />
+      <div
+        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-[101] animate-slide-up"
+        style={{ background: 'hsl(var(--background))', borderRadius: '24px 24px 0 0', padding: '0 1.25rem', paddingBottom: 'calc(var(--nav-height) + 1rem)' }}
+      >
+        <div className="flex justify-center pt-3 pb-2">
+          <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: 'hsl(var(--border))' }} />
+        </div>
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <p style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'hsl(var(--primary))' }}>Tu Receta</p>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', fontWeight: 700, color: 'hsl(var(--foreground))', marginTop: '0.1rem' }}>Protocolo del Vinagre</h2>
+          </div>
+          <button onClick={onClose} style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'hsl(var(--muted-foreground))', fontSize: '1rem' }}>✕</button>
+        </div>
+        <div style={{ background: 'hsl(var(--card))', border: '1.5px solid hsl(var(--primary) / .2)', borderRadius: '18px', overflow: 'hidden', marginBottom: '1rem' }}>
+          <div style={{ height: '3px', background: 'linear-gradient(90deg, hsl(128 30% 42%), hsl(36 66% 52%))' }} />
+          <div style={{ padding: '1rem 1.1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+            {RECIPE_ITEMS.map(({ icon, text }) => (
+              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <span style={{ fontSize: '1.25rem' }}>{icon}</span>
+                <span style={{ fontSize: '0.9rem', color: 'hsl(var(--foreground))' }}>{text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {[
+            { icon: '🥤', text: 'Mezcla todo en un vaso y agita bien' },
+            { icon: '☀️', text: 'Toma en ayunas, cada mañana' },
+            { icon: '⏳', text: 'Espera 30 min antes del café o desayuno' },
+          ].map(({ icon, text }) => (
+            <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.7rem 0.9rem', background: 'hsl(var(--green-pale))', borderRadius: '12px', fontSize: '0.88rem', color: 'hsl(var(--foreground))' }}>
+              <span style={{ fontSize: '1.15rem' }}>{icon}</span>
+              <span>{text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  )
+}
 
 const TABS = [
   {
@@ -74,6 +123,7 @@ function getFirstName(email) {
 export default function Shell({ tab, setTab, setViewer, appState, handlers }) {
   const { day, email } = appState
   const name = getFirstName(email)
+  const [recipeSheetOpen, setRecipeSheetOpen] = useState(false)
 
   const tabProps = { appState, handlers, setViewer, setTab }
 
@@ -129,6 +179,18 @@ export default function Shell({ tab, setTab, setViewer, appState, handlers }) {
         {tab === 'progreso'  && <Progreso  key="progreso"  {...tabProps} />}
         {tab === 'usuario'   && <Usuario   key="usuario"   {...tabProps} />}
       </main>
+
+      {/* Floating recipe button */}
+      <button
+        onClick={() => setRecipeSheetOpen(true)}
+        className="fixed z-[90] transition-all active:scale-[.92]"
+        style={{ bottom: 'calc(var(--nav-height) + 14px)', right: '16px', width: '48px', height: '48px', borderRadius: '50%', background: 'hsl(128 28% 36%)', color: '#fff', border: 'none', boxShadow: '0 4px 16px hsl(128 28% 36% / .4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', cursor: 'pointer' }}
+        aria-label="Ver receta"
+      >
+        🫙
+      </button>
+
+      <RecipeSheet isOpen={recipeSheetOpen} onClose={() => setRecipeSheetOpen(false)} />
 
       {/* Bottom nav — 5 tabs, ícones menores */}
       <nav

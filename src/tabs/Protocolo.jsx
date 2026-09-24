@@ -67,7 +67,10 @@ export default function Protocolo({ appState, setViewer }) {
                 {lesson.badge && (
                   <span
                     className="text-[.6rem] font-bold px-1.5 py-0.5 rounded-full"
-                    style={{ background: 'hsl(var(--accent))', color: 'white' }}
+                    style={{
+                      background: lesson.badge === 'Empieza aquí' ? 'hsl(5 75% 52%)' : 'hsl(var(--accent))',
+                      color: 'white',
+                    }}
                   >
                     {lesson.badge}
                   </span>

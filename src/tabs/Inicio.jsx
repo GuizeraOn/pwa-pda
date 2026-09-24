@@ -1,8 +1,50 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import ProgressRing from '../components/ProgressRing'
 import InstallBanner from '../components/InstallBanner'
-import { SYMPTOM_DAYS, SYMPTOM_QUESTIONS, EMOJI_SCALE, LESSONS } from '../data'
+import { SYMPTOM_DAYS, SYMPTOM_QUESTIONS, EMOJI_SCALE, LESSONS, RECIPE_ITEMS } from '../data'
 import { DAILY_TIPS, TESTIMONIALS, VINEGAR_FACTS } from '../data/daily'
+
+function RecipeCard({ daysCompleted }) {
+  const [expanded, setExpanded] = useState(daysCompleted < 7)
+  return (
+    <div
+      className="mx-4 rounded-[20px] overflow-hidden"
+      style={{ background: 'hsl(var(--card))', border: '1.5px solid hsl(var(--primary) / .2)', boxShadow: '0 2px 10px hsla(var(--foreground) / .05)' }}
+    >
+      <button
+        onClick={() => setExpanded(e => !e)}
+        className="w-full flex items-center justify-between px-5 py-3.5"
+        style={{ background: 'transparent', cursor: 'pointer' }}
+      >
+        <div className="flex items-center gap-2">
+          <span style={{ fontSize: '1.05rem' }}>📋</span>
+          <span className="font-semibold text-sm" style={{ color: 'hsl(var(--foreground))' }}>Tu Receta</span>
+          <span className="text-[.6rem] font-bold px-2 py-0.5 rounded-full" style={{ background: 'hsl(var(--green-pale))', color: 'hsl(var(--primary))' }}>
+            3 ingredientes
+          </span>
+        </div>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ color: 'hsl(var(--muted-foreground))', transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform .25s' }}>
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+      <div style={{ display: 'grid', gridTemplateRows: expanded ? '1fr' : '0fr', transition: 'grid-template-rows 0.3s cubic-bezier(.4,0,.2,1)' }}>
+        <div style={{ overflow: 'hidden' }}>
+          <div style={{ padding: '0 1.25rem 1rem', opacity: expanded ? 1 : 0, transform: expanded ? 'none' : 'translateY(-4px)', transition: 'opacity 0.22s ease, transform 0.22s ease', transitionDelay: expanded ? '0.05s' : '0s' }}>
+            {RECIPE_ITEMS.map(({ icon, text }) => (
+              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', marginBottom: '0.55rem' }}>
+                <span style={{ fontSize: '1.15rem' }}>{icon}</span>
+                <span className="text-sm" style={{ color: 'hsl(var(--foreground))' }}>{text}</span>
+              </div>
+            ))}
+            <p style={{ marginTop: '0.65rem', paddingTop: '0.65rem', borderTop: '1px solid hsl(var(--border))', fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))' }}>
+              Mezcla todo. Toma en ayunas cada mañana.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // ── Bloom block wrapper ───────────────────────────────────────────────────────
 // justBloomed = true  → animate in with delay
@@ -67,15 +109,17 @@ function ActionCard({ day, todayDone, onComplete, compact }) {
               Toma tu preparación<br />de vinagre ahora
             </h1>
 
-            {/* Instruction chip */}
+            {/* Inline ingredients */}
             <div
-              className="flex items-center gap-2.5 mt-3 mb-5 px-4 py-3 rounded-[14px]"
+              className="mt-3 mb-5 px-4 py-3 rounded-[14px]"
               style={{ background: 'hsl(var(--green-pale))' }}
             >
-              <span className="text-[1.15rem] shrink-0" aria-hidden="true">🫙</span>
-              <p className="text-sm font-medium leading-snug" style={{ color: 'hsl(var(--foreground) / .78)' }}>
-                2 cucharadas en 200 ml de agua tibia
-              </p>
+              {RECIPE_ITEMS.map(({ icon, text }) => (
+                <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.42rem' }}>
+                  <span style={{ fontSize: '1.05rem', flexShrink: 0 }}>{icon}</span>
+                  <span className="text-sm font-medium leading-snug" style={{ color: 'hsl(var(--foreground) / .82)' }}>{text}</span>
+                </div>
+              ))}
             </div>
           </>
         )}
@@ -453,6 +497,9 @@ export default function Inicio({ appState, handlers, setViewer, setTab }) {
         isInstalled={pwa?.isInstalled}
         isIOS={pwa?.isIOS}
       />
+
+      {/* Recipe card — permanent, collapsed after day 7 */}
+      <RecipeCard daysCompleted={daysCompleted} />
 
       {/* Block 1 — Action card (always, transforms on complete) */}
       <ActionCard

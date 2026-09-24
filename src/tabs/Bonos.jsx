@@ -278,10 +278,48 @@ function SectionLabel({ children }) {
   )
 }
 
+// ── Teaser block (locked content preview + progress bar) ─────────────────────
+
+function TeaserBlock({ daysCompleted, color }) {
+  const pct = Math.round((daysCompleted / 7) * 100)
+  return (
+    <div
+      className="px-4 pb-4"
+      style={{ background: color === 'teal' ? 'hsl(168 40% 97%)' : 'hsl(38 80% 97%)' }}
+    >
+      <div
+        className="rounded-[14px] p-4 flex flex-col gap-3"
+        style={{ background: color === 'teal' ? 'hsl(168 40% 92%)' : 'hsl(36 60% 92%)', border: `1px solid ${color === 'teal' ? 'hsl(168 35% 76%)' : 'hsl(36 50% 76%)'}` }}
+      >
+        <p className="text-sm font-semibold" style={{ color: color === 'teal' ? 'hsl(168 42% 18%)' : 'hsl(28 40% 22%)' }}>
+          🔒 Disponible desde el día 7
+        </p>
+        <p className="text-xs" style={{ color: color === 'teal' ? 'hsl(168 32% 38%)' : 'hsl(28 30% 42%)' }}>
+          Completa tu primera semana para desbloquear este bloque.
+        </p>
+        <div>
+          <div className="flex justify-between text-[.7rem] font-semibold mb-1.5" style={{ color: color === 'teal' ? 'hsl(168 38% 34%)' : 'hsl(28 35% 38%)' }}>
+            <span>Tu progreso</span>
+            <span>{daysCompleted}/7 días</span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: color === 'teal' ? 'hsl(168 30% 80%)' : 'hsl(36 45% 80%)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${pct}%`, background: color === 'teal' ? 'hsl(168 48% 36%)' : 'hsl(36 65% 46%)' }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function Bonos({ appState, setViewer }) {
-  const { bonuses, absorcionProtocols, absorcionBonuses, ritualProtocols, ritualBonuses } = appState
+  const { bonuses, days, absorcionProtocols, absorcionBonuses, ritualProtocols, ritualBonuses } = appState
+
+  const daysCompleted = (days || []).filter(Boolean).length
 
   const absorcionCount = absorcionProtocols.filter(Boolean).length + absorcionBonuses.filter(Boolean).length
   const ritualCount    = ritualProtocols.filter(Boolean).length + ritualBonuses.filter(Boolean).length
@@ -291,6 +329,7 @@ export default function Bonos({ appState, setViewer }) {
   const regularBonuses  = ABSORCION_BONUSES.filter(b => !b.secret)
   const secretBonus     = ABSORCION_BONUSES.find(b => b.secret)
 
+  const [absorcionOpen, setAbsorcionOpen] = useState(() => daysCompleted >= 7)
   const [ritualOpen, setRitualOpen] = useState(false)
 
   return (
@@ -304,83 +343,114 @@ export default function Bonos({ appState, setViewer }) {
           boxShadow: '0 6px 28px hsl(168 55% 26% / .12)',
         }}
       >
-        {/* Header teal */}
-        <div
-          className="px-5 pt-5 pb-4"
+        {/* Header teal — clickable toggle */}
+        <button
+          onClick={() => setAbsorcionOpen(o => !o)}
+          className="w-full px-5 pt-5 pb-4 flex items-start justify-between gap-3 text-left"
           style={{ background: 'linear-gradient(135deg, hsl(168 55% 26%), hsl(172 48% 18%))' }}
         >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-[.6rem] font-bold tracking-[.18em] uppercase mb-1.5" style={{ color: 'rgba(255,255,255,.7)' }}>
-                Acceso especial incluido
-              </p>
-              <h2 className="font-display font-bold text-[1.25rem] leading-tight text-white">
-                🧪 Protocolo Absorción Máxima
-              </h2>
-              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,.8)' }}>
-                Maximiza la acción del vinagre · 6 materiales
-              </p>
-            </div>
+          <div>
+            <p className="text-[.6rem] font-bold tracking-[.18em] uppercase mb-1.5" style={{ color: 'rgba(255,255,255,.7)' }}>
+              Acceso especial incluido
+            </p>
+            <h2 className="font-display font-bold text-[1.25rem] leading-tight text-white">
+              🧪 Protocolo Absorción Máxima
+            </h2>
+            <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,.8)' }}>
+              Maximiza la acción del vinagre · 6 materiales
+            </p>
+          </div>
+          <div className="flex items-center gap-2.5 shrink-0 mt-1">
             <div
-              className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full mt-1"
+              className="text-xs font-bold px-3 py-1.5 rounded-full"
               style={{ background: 'rgba(255,255,255,.2)', color: 'white' }}
             >
               {absorcionCount}/6
             </div>
+            <svg
+              width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="rgba(255,255,255,.8)" strokeWidth="2.5"
+              style={{ transform: absorcionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .25s' }}
+            >
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
           </div>
-        </div>
+        </button>
 
-        {/* Content area teal pale */}
-        <div className="px-4 pt-4 pb-4" style={{ background: 'hsl(168 40% 97%)' }}>
+        {/* Accordion content */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateRows: absorcionOpen ? '1fr' : '0fr',
+            transition: 'grid-template-rows 0.38s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        >
+          <div style={{ overflow: 'hidden' }}>
+            <div
+              className="px-4 pt-4 pb-4"
+              style={{
+                background: 'hsl(168 40% 97%)',
+                opacity: absorcionOpen ? 1 : 0,
+                transform: absorcionOpen ? 'translateY(0)' : 'translateY(-6px)',
+                transition: 'opacity 0.28s ease, transform 0.28s ease',
+                transitionDelay: absorcionOpen ? '0.08s' : '0s',
+              }}
+            >
+              <SectionLabel>Protocolos</SectionLabel>
 
-          <SectionLabel>Protocolos</SectionLabel>
+              {/* Large protocol card */}
+              <div className="flex flex-col gap-2.5 mb-3">
+                {largeProtocols.map(p => (
+                  <LargeProtocolCard
+                    key={p.id}
+                    item={p}
+                    done={absorcionProtocols[p.id]}
+                    onOpen={() => setViewer({ type: 'absorcion-protocol', id: p.id })}
+                  />
+                ))}
+              </div>
 
-          {/* Large protocol card */}
-          <div className="flex flex-col gap-2.5 mb-3">
-            {largeProtocols.map(p => (
-              <LargeProtocolCard
-                key={p.id}
-                item={p}
-                done={absorcionProtocols[p.id]}
-                onOpen={() => setViewer({ type: 'absorcion-protocol', id: p.id })}
-              />
-            ))}
-          </div>
+              {/* Small protocol 2-col grid */}
+              {smallProtocols.length > 0 && (
+                <div className="grid grid-cols-2 gap-2.5 mb-4">
+                  {smallProtocols.map(p => (
+                    <SmallProtocolCard
+                      key={p.id}
+                      item={p}
+                      done={absorcionProtocols[p.id]}
+                      onOpen={() => setViewer({ type: 'absorcion-protocol', id: p.id })}
+                    />
+                  ))}
+                </div>
+              )}
 
-          {/* Small protocol 2-col grid */}
-          {smallProtocols.length > 0 && (
-            <div className="grid grid-cols-2 gap-2.5 mb-4">
-              {smallProtocols.map(p => (
-                <SmallProtocolCard
-                  key={p.id}
-                  item={p}
-                  done={absorcionProtocols[p.id]}
-                  onOpen={() => setViewer({ type: 'absorcion-protocol', id: p.id })}
-                />
-              ))}
+              <SectionLabel>Bonos del Protocolo</SectionLabel>
+
+              <div className="flex flex-col gap-2.5">
+                {regularBonuses.map(b => (
+                  <AbsorcionBonusCard
+                    key={b.id}
+                    item={b}
+                    done={absorcionBonuses[b.id]}
+                    onOpen={() => setViewer({ type: 'absorcion-bonus', id: b.id })}
+                  />
+                ))}
+                {secretBonus && (
+                  <SecretCard
+                    item={secretBonus}
+                    done={absorcionBonuses[secretBonus.id]}
+                    onOpen={() => setViewer({ type: 'absorcion-bonus', id: secretBonus.id })}
+                  />
+                )}
+              </div>
             </div>
-          )}
-
-          <SectionLabel>Bonos del Protocolo</SectionLabel>
-
-          <div className="flex flex-col gap-2.5">
-            {regularBonuses.map(b => (
-              <AbsorcionBonusCard
-                key={b.id}
-                item={b}
-                done={absorcionBonuses[b.id]}
-                onOpen={() => setViewer({ type: 'absorcion-bonus', id: b.id })}
-              />
-            ))}
-            {secretBonus && (
-              <SecretCard
-                item={secretBonus}
-                done={absorcionBonuses[secretBonus.id]}
-                onOpen={() => setViewer({ type: 'absorcion-bonus', id: secretBonus.id })}
-              />
-            )}
           </div>
         </div>
+
+        {/* Teaser when collapsed + first 7 days */}
+        {!absorcionOpen && daysCompleted < 7 && (
+          <TeaserBlock daysCompleted={daysCompleted} color="teal" />
+        )}
       </div>
 
       {/* ── BLOCO ÂMBAR — Ritual Activador Ácido (colapsável) ── */}
@@ -470,6 +540,11 @@ export default function Bonos({ appState, setViewer }) {
             </div>
           </div>
         </div>
+
+        {/* Teaser when collapsed + first 7 days */}
+        {!ritualOpen && daysCompleted < 7 && (
+          <TeaserBlock daysCompleted={daysCompleted} color="amber" />
+        )}
       </div>
 
       {/* ── BLOCO SAGE GREEN — Bonos del Protocolo del Vinagre ── */}

@@ -3,12 +3,20 @@ import Login from './components/Login'
 import Shell from './components/Shell'
 import Viewer from './components/Viewer'
 import InstallModal from './components/InstallModal'
+import Onboarding from './components/Onboarding'
 import { usePWAInstall } from './hooks/usePWAInstall'
 
 const STORAGE_KEY = 'protocolo_state'
-// Guarda o email verificado por 7 dias para não chamar a planilha toda vez
 const SESSION_KEY = 'protocolo_session'
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000
+const ONBOARDING_KEY = 'protocolo_onboarding'
+
+function hasSeenOnboarding(email) {
+  try { return localStorage.getItem(`${ONBOARDING_KEY}_${email}`) === '1' } catch { return true }
+}
+function markOnboardingDone(email) {
+  try { localStorage.setItem(`${ONBOARDING_KEY}_${email}`, '1') } catch {}
+}
 
 function loadSession() {
   try {
@@ -84,6 +92,7 @@ export default function App() {
   })
 
   const pwa = usePWAInstall()
+  const [showOnboarding, setShowOnboarding] = useState(false)
 
   // ── Restaura sessão salva ao abrir o app ────────────────────────────
   const applyUserState = useCallback((userEmail) => {
@@ -114,8 +123,20 @@ export default function App() {
       setEmail(savedEmail)
       applyUserState(savedEmail)
       setLoggedIn(true)
+      if (!hasSeenOnboarding(savedEmail)) {
+        setShowOnboarding(true)
+      } else {
+        const st = loadState(savedEmail)
+        if (!st || st.days.every(d => !d)) setTab('protocolo')
+      }
     }
   }, [applyUserState])
+
+  const handleOnboardingComplete = useCallback(() => {
+    markOnboardingDone(email)
+    setShowOnboarding(false)
+    setTab('protocolo')
+  }, [email])
 
   // ── Login vindo do componente Login (email já verificado na planilha) ─
   const handleLogin = useCallback((inputEmail) => {
@@ -123,6 +144,12 @@ export default function App() {
     setEmail(inputEmail)
     applyUserState(inputEmail)
     setLoggedIn(true)
+    if (!hasSeenOnboarding(inputEmail)) {
+      setShowOnboarding(true)
+    } else {
+      const st = loadState(inputEmail)
+      if (!st || st.days.every(d => !d)) setTab('protocolo')
+    }
   }, [applyUserState])
 
   // ── Persist on every state change after login ───────────────────────
@@ -221,6 +248,10 @@ export default function App() {
           handlers={handlers}
           pwa={pwa}
         />
+      )}
+
+      {showOnboarding && (
+        <Onboarding onComplete={handleOnboardingComplete} />
       )}
 
       {viewer && (

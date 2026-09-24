@@ -1,36 +1,44 @@
+export const RECIPE_ITEMS = [
+  { icon: '🫙', text: '2 cdas vinagre de manzana orgánico' },
+  { icon: '🫚', text: '1 cda jengibre fresco rallado' },
+  { icon: '🍋', text: 'Jugo de ½ limón' },
+  { icon: '💧', text: '200 ml agua tibia' },
+]
+
 export const LESSONS = [
   {
     id: 0,
     eyebrow: 'Lección 1',
-    title: 'ACV para Protocolos de Pulmón',
-    desc: 'La lección para principiantes — qué es y cómo funciona',
+    title: '🫙 La Receta — 3 ingredientes y cómo prepararlos',
+    desc: 'La receta completa: ingredientes exactos, proporciones y preparación',
+    badge: 'Empieza aquí',
     pdf: '/pdfs/Vinagre-de-Manzana-ACV-para-Protocolos-de-Pulmon-La-Leccion-para-Principiantes.pdf',
   },
   {
     id: 1,
     eyebrow: 'Lección 2',
-    title: 'Cuándo Tomar tu Protocolo',
+    title: '⏰ El mejor horario para tomarla',
     desc: 'El horario ideal para maximizar cada dosis',
     pdf: '/pdfs/Leccion-Diaria-Cuando-Tomar-tu-Protocolo-de-Vinagre-de-Manzana.pdf',
   },
   {
     id: 2,
     eyebrow: 'Lección 3',
-    title: 'Guía para Resultados Más Rápidos',
+    title: '⚡ Qué comer para acelerar los resultados',
     desc: 'El protocolo completo de 21 días paso a paso',
     pdf: '/pdfs/Protocolo-21-Dias-de-Vinagre-de-Sidra-de-Manzana-Guia-para-Resultados-Mas-Rapidos.pdf',
   },
   {
     id: 3,
     eyebrow: 'Lección 4',
-    title: 'Programa de Limpieza con Vinagre',
+    title: '❌ Los errores que arruinan el protocolo',
     desc: 'La limpieza profunda que potencia el protocolo',
     pdf: '/pdfs/Programa-de-Limpieza-con-Vinagre-de-Sidra-de-Manzana.pdf',
   },
   {
     id: 4,
     eyebrow: 'Lección 5',
-    title: 'La Hora del Intestino',
+    title: '🧫 Por qué el vinagre llega más fuerte',
     desc: 'El momento exacto que activa la absorción máxima',
     badge: 'Nuevo',
     pdf: '/pdfs/absorcion-maxima/Guia-de-Rescate-Intestinal-Protocolo-de-Eliminacion-y-Proteccion.pdf',
