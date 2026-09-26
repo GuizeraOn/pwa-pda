@@ -41,7 +41,7 @@ export const LESSONS = [
   },
   {
     id: 1,
-    unlockDay: 0,
+    unlockDay: 3,
     eyebrow: 'Lección 2',
     title: '⏰ El mejor horario para tomarla',
     desc: 'El horario ideal para maximizar cada dosis',
@@ -50,7 +50,7 @@ export const LESSONS = [
   },
   {
     id: 2,
-    unlockDay: 1,
+    unlockDay: 5,
     eyebrow: 'Lección 3',
     title: '⚡ Qué comer para acelerar los resultados',
     desc: 'El protocolo completo de 21 días paso a paso',
@@ -59,7 +59,7 @@ export const LESSONS = [
   },
   {
     id: 3,
-    unlockDay: 2,
+    unlockDay: 7,
     eyebrow: 'Lección 4',
     title: '❌ Los errores que arruinan el protocolo',
     desc: 'La limpieza profunda que potencia el protocolo',
@@ -68,7 +68,7 @@ export const LESSONS = [
   },
   {
     id: 4,
-    unlockDay: 3,
+    unlockDay: 10,
     eyebrow: 'Lección 5',
     title: '🧫 Por qué el vinagre llega más fuerte',
     desc: 'El momento exacto que activa la absorción máxima',

@@ -349,10 +349,7 @@ export default function Bonos({ appState, setViewer }) {
 
   const daysSinceStart = startTimestamp ? Math.floor((Date.now() - startTimestamp) / 86400000) : 0
 
-  const classicLocked   = daysSinceStart < 7
-  const absorcionLocked = daysSinceStart < 10
-  const ritualLocked    = daysSinceStart < 14
-  const day21Locked     = daysSinceStart < 21
+  const classicLocked = daysSinceStart < 7
 
   const absorcionCount = absorcionProtocols.filter(Boolean).length + absorcionBonuses.filter(Boolean).length
   const ritualCount    = ritualProtocols.filter(Boolean).length + ritualBonuses.filter(Boolean).length
@@ -362,7 +359,7 @@ export default function Bonos({ appState, setViewer }) {
   const regularBonuses  = ABSORCION_BONUSES.filter(b => !b.secret)
   const secretBonus     = ABSORCION_BONUSES.find(b => b.secret)
 
-  const [absorcionOpen, setAbsorcionOpen] = useState(() => !absorcionLocked)
+  const [absorcionOpen, setAbsorcionOpen] = useState(true)
   const [ritualOpen, setRitualOpen] = useState(false)
 
   return (
@@ -376,15 +373,15 @@ export default function Bonos({ appState, setViewer }) {
           boxShadow: '0 6px 28px hsl(168 55% 26% / .12)',
         }}
       >
-        {/* Header teal — clickable toggle (disabled when locked) */}
+        {/* Header teal — always clickable */}
         <button
-          onClick={absorcionLocked ? undefined : () => setAbsorcionOpen(o => !o)}
+          onClick={() => setAbsorcionOpen(o => !o)}
           className="w-full px-5 pt-5 pb-4 flex items-start justify-between gap-3 text-left"
-          style={{ background: 'linear-gradient(135deg, hsl(168 55% 26%), hsl(172 48% 18%))', cursor: absorcionLocked ? 'default' : 'pointer' }}
+          style={{ background: 'linear-gradient(135deg, hsl(168 55% 26%), hsl(172 48% 18%))' }}
         >
           <div>
             <p className="text-[.6rem] font-bold tracking-[.18em] uppercase mb-1.5" style={{ color: 'rgba(255,255,255,.7)' }}>
-              Acceso especial incluido
+              🎁 Incluido como regalo especial
             </p>
             <h2 className="font-display font-bold text-[1.25rem] leading-tight text-white">
               🧪 Protocolo Absorción Máxima
@@ -394,18 +391,12 @@ export default function Bonos({ appState, setViewer }) {
             </p>
           </div>
           <div className="flex items-center gap-2.5 shrink-0 mt-1">
-            {absorcionLocked ? (
-              <span style={{ fontSize: '1.3rem' }}>🔒</span>
-            ) : (
-              <>
-                <div className="text-xs font-bold px-3 py-1.5 rounded-full" style={{ background: 'rgba(255,255,255,.2)', color: 'white' }}>
-                  {absorcionCount}/6
-                </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" strokeWidth="2.5" style={{ transform: absorcionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .25s' }}>
-                  <path d="M6 9l6 6 6-6"/>
-                </svg>
-              </>
-            )}
+            <div className="text-xs font-bold px-3 py-1.5 rounded-full" style={{ background: 'rgba(255,255,255,.2)', color: 'white' }}>
+              {absorcionCount}/6
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" strokeWidth="2.5" style={{ transform: absorcionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .25s' }}>
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
           </div>
         </button>
 
@@ -479,10 +470,6 @@ export default function Bonos({ appState, setViewer }) {
           </div>
         </div>
 
-        {/* Teaser when locked */}
-        {absorcionLocked && (
-          <TeaserBlock startTimestamp={startTimestamp} unlockDay={10} color="teal" />
-        )}
       </div>
 
       {/* ── BLOCO ÂMBAR — Ritual Activador Ácido (colapsável) ── */}
@@ -493,15 +480,15 @@ export default function Bonos({ appState, setViewer }) {
           boxShadow: '0 4px 20px hsl(36 60% 50% / .10)',
         }}
       >
-        {/* Header — clicável para abrir/fechar (desabilitado quando bloqueado) */}
+        {/* Header — always clickable */}
         <button
-          onClick={ritualLocked ? undefined : () => setRitualOpen(o => !o)}
+          onClick={() => setRitualOpen(o => !o)}
           className="w-full px-5 py-4 flex items-center justify-between gap-3 text-left"
-          style={{ background: 'linear-gradient(135deg, hsl(36 70% 46%), hsl(28 65% 36%))', cursor: ritualLocked ? 'default' : 'pointer' }}
+          style={{ background: 'linear-gradient(135deg, hsl(36 70% 46%), hsl(28 65% 36%))' }}
         >
           <div>
             <p className="text-[.6rem] font-bold tracking-[.18em] uppercase mb-1" style={{ color: 'rgba(255,255,255,.7)' }}>
-              Incluido con tu programa
+              🎁 Incluido como regalo especial
             </p>
             <h3 className="font-display font-bold text-[1.1rem] leading-tight text-white">
               🔥 Ritual Activador Ácido
@@ -511,18 +498,12 @@ export default function Bonos({ appState, setViewer }) {
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            {ritualLocked ? (
-              <span style={{ fontSize: '1.3rem' }}>🔒</span>
-            ) : (
-              <>
-                <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'rgba(255,255,255,.2)', color: 'white' }}>
-                  {ritualCount}/7
-                </span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" strokeWidth="2.5" style={{ transform: ritualOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .25s' }}>
-                  <path d="M6 9l6 6 6-6"/>
-                </svg>
-              </>
-            )}
+            <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'rgba(255,255,255,.2)', color: 'white' }}>
+              {ritualCount}/7
+            </span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" strokeWidth="2.5" style={{ transform: ritualOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .25s' }}>
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
           </div>
         </button>
 
@@ -572,10 +553,6 @@ export default function Bonos({ appState, setViewer }) {
           </div>
         </div>
 
-        {/* Teaser when locked */}
-        {ritualLocked && (
-          <TeaserBlock startTimestamp={startTimestamp} unlockDay={14} color="amber" />
-        )}
       </div>
 
       {/* ── BLOCO SAGE GREEN — Bonos del Protocolo del Vinagre ── */}
@@ -626,42 +603,31 @@ export default function Bonos({ appState, setViewer }) {
         )}
       </div>
 
-      {/* ── DÍA 21 — Reinicio Mitocondrial ───────────────────────── */}
+      {/* ── Reinicio Mitocondrial — siempre accesible (upsell propio) ── */}
       <div className="px-4 mt-4 mb-2">
         <div
           className="rounded-[20px] overflow-hidden"
-          style={{ border: `1.5px solid ${day21Locked ? 'hsl(var(--border))' : 'hsl(128 38% 55%)'}`, boxShadow: day21Locked ? 'none' : '0 4px 20px hsl(128 28% 36% / .15)' }}
+          style={{ border: '1.5px solid hsl(128 38% 55%)', boxShadow: '0 4px 20px hsl(128 28% 36% / .15)' }}
         >
           <div style={{ height: '3px', background: 'linear-gradient(90deg, hsl(128 30% 42%), hsl(36 66% 52%), hsl(280 50% 60%))' }} />
-          <div style={{ padding: '1rem 1.1rem', background: day21Locked ? 'hsl(var(--card))' : 'hsl(var(--green-pale))' }}>
+          <div style={{ padding: '1rem 1.1rem', background: 'hsl(var(--green-pale))' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.6rem' }}>
               <div>
                 <p style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'hsl(var(--muted-foreground))', marginBottom: '0.3rem' }}>
-                  {day21Locked ? 'Recompensa de finalización' : '¡Lo lograste!'}
+                  🎁 Incluido como regalo especial
                 </p>
-                <p style={{ fontWeight: 700, fontSize: '1rem', color: day21Locked ? 'hsl(var(--foreground) / .55)' : 'hsl(var(--foreground))', lineHeight: 1.25 }}>
+                <p style={{ fontWeight: 700, fontSize: '1rem', color: 'hsl(var(--foreground))', lineHeight: 1.25 }}>
                   🔋 Reinicio Mitocondrial<br />+ Protocolo 60 Días
                 </p>
               </div>
-              <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>{day21Locked ? '🔒' : '🏆'}</span>
+              <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>🏆</span>
             </div>
             <p style={{ fontSize: '0.82rem', color: 'hsl(var(--muted-foreground))', marginBottom: '0.65rem' }}>
-              {day21Locked
-                ? 'El siguiente nivel — para mantener y amplificar tus resultados a largo plazo.'
-                : 'Completaste el protocolo de 21 días. Tu próxima etapa está lista.'}
+              El siguiente nivel — para mantener y amplificar tus resultados a largo plazo.
             </p>
-            {day21Locked ? (
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
-                <span style={{ color: 'hsl(var(--muted-foreground))' }}>Disponible el día 21 — en:</span>
-                <span style={{ fontWeight: 700, color: 'hsl(var(--primary))' }}>
-                  <LockCountdown targetTimestamp={(startTimestamp || Date.now()) + 21 * 86400000} />
-                </span>
-              </div>
-            ) : (
-              <div style={{ background: 'hsl(var(--primary))', color: '#fff', borderRadius: '12px', padding: '0.6rem 1rem', textAlign: 'center', fontSize: '0.88rem', fontWeight: 600 }}>
-                Ver mi protocolo de mantenimiento →
-              </div>
-            )}
+            <div style={{ background: 'hsl(var(--primary))', color: '#fff', borderRadius: '12px', padding: '0.6rem 1rem', textAlign: 'center', fontSize: '0.88rem', fontWeight: 600 }}>
+              Ver mi protocolo de mantenimiento →
+            </div>
           </div>
         </div>
       </div>
