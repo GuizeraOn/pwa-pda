@@ -5,6 +5,30 @@ export const RECIPE_ITEMS = [
   { icon: '💧', text: '200 ml agua tibia' },
 ]
 
+export const PHASE_RECIPES = {
+  1: [
+    { icon: '🫙', text: '2 cdas vinagre de manzana orgánico' },
+    { icon: '🫚', text: '1 cda jengibre fresco rallado' },
+    { icon: '🍋', text: 'Jugo de ½ limón' },
+    { icon: '💧', text: '200 ml agua tibia' },
+  ],
+  2: [
+    { icon: '🫙', text: '2 cdas vinagre de manzana orgánico' },
+    { icon: '🫚', text: '1 cda jengibre fresco rallado' },
+    { icon: '🍋', text: 'Jugo de ½ limón' },
+    { icon: '💧', text: '200 ml agua tibia' },
+    { icon: '🌿', text: '1 pizca de cúrcuma en polvo', isNew: true },
+  ],
+  3: [
+    { icon: '🫙', text: '2 cdas vinagre de manzana orgánico' },
+    { icon: '🫚', text: '1 cda jengibre fresco rallado' },
+    { icon: '🍋', text: 'Jugo de ½ limón' },
+    { icon: '💧', text: '200 ml agua tibia' },
+    { icon: '🌿', text: '1 pizca de cúrcuma en polvo' },
+    { icon: '🍯', text: '1 cdita de miel cruda', isNew: true },
+  ],
+}
+
 export const LESSONS = [
   {
     id: 0,

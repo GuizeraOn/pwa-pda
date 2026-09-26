@@ -1,10 +1,40 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import ProgressRing from '../components/ProgressRing'
 import InstallBanner from '../components/InstallBanner'
-import { SYMPTOM_DAYS, SYMPTOM_QUESTIONS, EMOJI_SCALE, LESSONS, RECIPE_ITEMS } from '../data'
+import { SYMPTOM_DAYS, SYMPTOM_QUESTIONS, EMOJI_SCALE, LESSONS, RECIPE_ITEMS, PHASE_RECIPES } from '../data'
 import { DAILY_TIPS, TESTIMONIALS, VINEGAR_FACTS } from '../data/daily'
 
-function RecipeCard({ daysCompleted }) {
+// ── Phase helpers ─────────────────────────────────────────────────────────────
+
+function getPhase(day) {
+  if (day < 7) return 1
+  if (day < 14) return 2
+  return 3
+}
+
+const PHASE_TEASERS = {
+  1: 'En el Día 7 agregas el ingrediente que penetra más profundo',
+  2: 'Faltan 5 días para la Fase 2 — el paso que la mayoría no conoce',
+  3: 'En 4 días tu protocolo cambia. Sigue para llegar ahí',
+  4: '3 días para la Activación Profunda',
+  5: 'Pasado mañana empieza la parte más importante del protocolo',
+  6: 'Mañana es el Día 7. Tu protocolo entra en Fase 2 🔓',
+  8: 'En el Día 14 completas el protocolo con el ingrediente final',
+  9: 'Faltan 5 días para la Fase 3 — el sellado definitivo',
+  10: '4 días para el Sellado y Protección',
+  11: '3 días para la Fase 3',
+  12: 'Pasado mañana llega el ingrediente final del protocolo',
+  13: 'Mañana es el Día 14. Tu protocolo entra en Fase 3 🔓',
+}
+
+function hasSeenPhaseUnlock(email, phase) {
+  try { return localStorage.getItem(`protocolo_phase${phase}seen_${email}`) === '1' } catch { return true }
+}
+function markPhaseUnlockSeen(email, phase) {
+  try { localStorage.setItem(`protocolo_phase${phase}seen_${email}`, '1') } catch {}
+}
+
+function RecipeCard({ daysCompleted, recipe }) {
   const [expanded, setExpanded] = useState(daysCompleted < 7)
   return (
     <div
@@ -20,7 +50,7 @@ function RecipeCard({ daysCompleted }) {
           <span style={{ fontSize: '1.05rem' }}>📋</span>
           <span className="font-semibold text-sm" style={{ color: 'hsl(var(--foreground))' }}>Tu Receta</span>
           <span className="text-[.6rem] font-bold px-2 py-0.5 rounded-full" style={{ background: 'hsl(var(--green-pale))', color: 'hsl(var(--primary))' }}>
-            3 ingredientes
+            {recipe.length} ingredientes
           </span>
         </div>
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ color: 'hsl(var(--muted-foreground))', transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform .25s' }}>
@@ -30,10 +60,11 @@ function RecipeCard({ daysCompleted }) {
       <div style={{ display: 'grid', gridTemplateRows: expanded ? '1fr' : '0fr', transition: 'grid-template-rows 0.3s cubic-bezier(.4,0,.2,1)' }}>
         <div style={{ overflow: 'hidden' }}>
           <div style={{ padding: '0 1.25rem 1rem', opacity: expanded ? 1 : 0, transform: expanded ? 'none' : 'translateY(-4px)', transition: 'opacity 0.22s ease, transform 0.22s ease', transitionDelay: expanded ? '0.05s' : '0s' }}>
-            {RECIPE_ITEMS.map(({ icon, text }) => (
+            {recipe.map(({ icon, text, isNew }) => (
               <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', marginBottom: '0.55rem' }}>
                 <span style={{ fontSize: '1.15rem' }}>{icon}</span>
-                <span className="text-sm" style={{ color: 'hsl(var(--foreground))' }}>{text}</span>
+                <span className="text-sm" style={{ color: 'hsl(var(--foreground))', flex: 1 }}>{text}</span>
+                {isNew && <span style={{ fontSize: '0.6rem', fontWeight: 700, padding: '0.18rem 0.5rem', borderRadius: '99px', background: 'hsl(36 66% 52%)', color: 'white', flexShrink: 0 }}>NUEVO</span>}
               </div>
             ))}
             <p style={{ marginTop: '0.65rem', paddingTop: '0.65rem', borderTop: '1px solid hsl(var(--border))', fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))' }}>
@@ -66,7 +97,7 @@ function BloomBlock({ delay = 0, justBloomed, children }) {
 
 // ── Block 1: Action hero ──────────────────────────────────────────────────────
 
-function ActionCard({ day, todayDone, onComplete, compact }) {
+function ActionCard({ day, todayDone, onComplete, compact, phase, phaseRecipe, phaseTeaser }) {
   return (
     <div
       className="mx-4 rounded-[24px] overflow-hidden transition-all duration-500"
@@ -92,13 +123,23 @@ function ActionCard({ day, todayDone, onComplete, compact }) {
       )}
 
       <div className={compact ? 'px-5 py-4' : 'px-6 pt-5 pb-0'}>
-        {/* Day badge */}
-        <span
-          className="inline-flex items-center text-xs font-bold tracking-[.1em] uppercase px-3 py-1 rounded-full"
-          style={{ background: 'hsl(var(--accent-pale))', color: 'hsl(var(--accent))' }}
-        >
-          Día {day} de 21
-        </span>
+        {/* Day + Phase badges */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span
+            className="inline-flex items-center text-xs font-bold tracking-[.1em] uppercase px-3 py-1 rounded-full"
+            style={{ background: 'hsl(var(--accent-pale))', color: 'hsl(var(--accent))' }}
+          >
+            Día {day} de 21
+          </span>
+          {phase && (
+            <span
+              className="inline-flex items-center text-xs font-bold tracking-[.1em] uppercase px-3 py-1 rounded-full"
+              style={{ background: 'hsl(var(--green-pale))', color: 'hsl(var(--primary))' }}
+            >
+              FASE {phase}
+            </span>
+          )}
+        </div>
 
         {!compact && (
           <>
@@ -114,10 +155,11 @@ function ActionCard({ day, todayDone, onComplete, compact }) {
               className="mt-3 mb-5 px-4 py-3 rounded-[14px]"
               style={{ background: 'hsl(var(--green-pale))' }}
             >
-              {RECIPE_ITEMS.map(({ icon, text }) => (
+              {(phaseRecipe || RECIPE_ITEMS).map(({ icon, text, isNew }) => (
                 <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.42rem' }}>
                   <span style={{ fontSize: '1.05rem', flexShrink: 0 }}>{icon}</span>
-                  <span className="text-sm font-medium leading-snug" style={{ color: 'hsl(var(--foreground) / .82)' }}>{text}</span>
+                  <span className="text-sm font-medium leading-snug" style={{ color: 'hsl(var(--foreground) / .82)', flex: 1 }}>{text}</span>
+                  {isNew && <span style={{ fontSize: '0.6rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: '99px', background: 'hsl(36 66% 52%)', color: 'white', flexShrink: 0 }}>NUEVO</span>}
                 </div>
               ))}
             </div>
@@ -155,11 +197,162 @@ function ActionCard({ day, todayDone, onComplete, compact }) {
           {todayDone ? `Día ${day - 1} completado` : 'Marcar como completado'}
         </button>
 
-        {!todayDone && (
+        {!todayDone && phaseTeaser && (
+          <div style={{ marginTop: '0.6rem', padding: '0.55rem 0.75rem', borderRadius: '10px', background: 'hsl(36 66% 52% / .1)', border: '1px solid hsl(36 66% 52% / .25)', display: 'flex', alignItems: 'flex-start', gap: '0.4rem' }}>
+            <span style={{ fontSize: '0.75rem', flexShrink: 0, marginTop: '0.05rem' }}>⏳</span>
+            <p style={{ fontSize: '0.73rem', color: 'hsl(var(--accent))', lineHeight: 1.4, margin: 0 }}>{phaseTeaser}</p>
+          </div>
+        )}
+        {!todayDone && !phaseTeaser && (
           <p className="text-center text-xs mt-2.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
             Tócalo después de tomar tu preparación
           </p>
         )}
+      </div>
+    </div>
+  )
+}
+
+// ── Phase reveal card (shown days 1–6) ───────────────────────────────────────
+
+function PhaseRevealCard({ day, phase }) {
+  const [expanded, setExpanded] = useState(day === 1)
+  if (phase > 1) return null
+
+  const phases = [
+    { p: 1, emoji: '🫙', name: 'Preparación Base', days: 'Días 1 al 6', desc: 'El vinagre disuelve el moco acumulado. Las bases se establecen.', active: true },
+    { p: 2, emoji: '⚡', name: 'Activación Profunda', days: 'Día 7 en adelante', desc: 'Se agrega el ingrediente que penetra los alvéolos más dañados.', active: false },
+    { p: 3, emoji: '🏆', name: 'Sellado y Protección', days: 'Día 14 en adelante', desc: 'El ingrediente final sella el tejido pulmonar regenerado.', active: false },
+  ]
+
+  return (
+    <div
+      className="mx-4 rounded-[20px] overflow-hidden"
+      style={{ background: 'hsl(var(--card))', border: '1.5px solid hsl(var(--primary) / .2)', boxShadow: '0 2px 10px hsla(var(--foreground) / .05)' }}
+    >
+      <button
+        onClick={() => setExpanded(e => !e)}
+        className="w-full flex items-center justify-between px-5 py-3.5"
+        style={{ background: 'transparent', cursor: 'pointer' }}
+      >
+        <div className="flex items-center gap-2">
+          <span style={{ fontSize: '1.05rem' }}>📋</span>
+          <span className="font-semibold text-sm" style={{ color: 'hsl(var(--foreground))' }}>Tu protocolo tiene 3 Fases</span>
+          <span className="text-[.6rem] font-bold px-2 py-0.5 rounded-full" style={{ background: 'hsl(var(--green-pale))', color: 'hsl(var(--primary))' }}>
+            Fase 1 activa
+          </span>
+        </div>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ color: 'hsl(var(--muted-foreground))', transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform .25s' }}>
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+      <div style={{ display: 'grid', gridTemplateRows: expanded ? '1fr' : '0fr', transition: 'grid-template-rows 0.3s cubic-bezier(.4,0,.2,1)' }}>
+        <div style={{ overflow: 'hidden' }}>
+          <div style={{ padding: '0 1rem 1rem', opacity: expanded ? 1 : 0, transform: expanded ? 'none' : 'translateY(-4px)', transition: 'opacity 0.22s ease, transform 0.22s ease', transitionDelay: expanded ? '0.05s' : '0s' }}>
+            <p className="text-xs mb-3" style={{ color: 'hsl(var(--muted-foreground))' }}>
+              Cada fase agrega un ingrediente. Llegarás aquí si sigues el protocolo.
+            </p>
+            {phases.map(({ p, emoji, name, days: pDays, desc, active }) => (
+              <div
+                key={p}
+                style={{
+                  display: 'flex', gap: '0.75rem', padding: '0.7rem', borderRadius: '14px', marginBottom: '0.45rem',
+                  background: active ? 'hsl(var(--green-pale))' : 'hsl(var(--background))',
+                  border: `1.5px solid ${active ? 'hsl(var(--primary) / .3)' : 'hsl(var(--border))'}`,
+                  opacity: active ? 1 : 0.65,
+                }}
+              >
+                <div style={{ width: '34px', height: '34px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem', background: active ? 'hsl(var(--primary))' : 'hsl(var(--border))' }}>
+                  {active ? emoji : '🔒'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.18rem' }}>
+                    <span className="text-[.62rem] font-bold tracking-[.1em] uppercase" style={{ color: active ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))' }}>FASE {p}</span>
+                    <span className="text-[.62rem]" style={{ color: 'hsl(var(--muted-foreground))' }}>· {pDays}</span>
+                    {active && <span className="text-[.58rem] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'hsl(var(--primary))', color: 'white' }}>← Estás aquí</span>}
+                  </div>
+                  <p className="text-xs font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{name}</p>
+                  <p className="text-[.72rem] mt-0.5 leading-snug" style={{ color: 'hsl(var(--muted-foreground))' }}>{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Phase unlock celebration card ─────────────────────────────────────────────
+
+function PhaseUnlockCard({ phase, onDismiss }) {
+  const recipe = PHASE_RECIPES[phase]
+  const isPhase2 = phase === 2
+  const explanation = isPhase2
+    ? { headline: 'Por qué la cúrcuma ahora:', body: 'La curcumina activa los cilios pulmonares que el vinagre acaba de liberar. Sin ella, el proceso de limpieza para a la mitad.' }
+    : { headline: 'Por qué la miel ahora:', body: 'La miel cruda sella el tejido regenerado y potencia la absorción final, completando el ciclo de limpieza profunda.' }
+  const congratsText = isPhase2
+    ? 'Completaste tu primera semana. Eso te pone en el grupo del 30% que llega hasta aquí.'
+    : 'Completaste dos semanas. Estás en el grupo del 8% que llega al protocolo completo.'
+
+  return (
+    <div
+      className="mx-4 rounded-[24px] overflow-hidden"
+      style={{ border: '2px solid hsl(var(--primary) / .35)', boxShadow: '0 8px 32px hsla(var(--foreground) / .12)' }}
+    >
+      {/* Celebration header */}
+      <div style={{ background: 'linear-gradient(135deg, hsl(128 28% 36%), hsl(128 22% 30%))', padding: '1.4rem 1.25rem 1.2rem', color: 'white' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.6rem' }}>
+          <span style={{ fontSize: '2rem' }}>🔓</span>
+          <div>
+            <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.8, marginBottom: '0.15rem' }}>
+              FASE {phase} DESBLOQUEADA
+            </p>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.2rem', fontWeight: 700, lineHeight: 1.25, margin: 0 }}>
+              {isPhase2 ? '¡Activación Profunda!' : '¡Sellado y Protección!'}
+            </h2>
+          </div>
+        </div>
+        <p style={{ fontSize: '0.81rem', opacity: 0.9, lineHeight: 1.5, margin: 0 }}>{congratsText}</p>
+      </div>
+
+      {/* Phase recipe */}
+      <div style={{ padding: '1rem 1.25rem', background: 'hsl(var(--card))', borderTop: '1px solid hsl(var(--border))' }}>
+        <p style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'hsl(var(--primary))', marginBottom: '0.75rem' }}>
+          ⚡ RECETA FASE {phase} — {isPhase2 ? 'Activación Profunda' : 'Sellado y Protección'}
+        </p>
+        {recipe.map(({ icon, text, isNew }) => (
+          <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.45rem' }}>
+            <span style={{ fontSize: '1.05rem', flexShrink: 0 }}>{icon}</span>
+            <span style={{ fontSize: '0.88rem', color: 'hsl(var(--foreground))', flex: 1 }}>{text}</span>
+            {isNew && (
+              <span style={{ fontSize: '0.6rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: '99px', background: 'hsl(36 66% 52%)', color: 'white', flexShrink: 0 }}>
+                ← NUEVO
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Explanation */}
+      <div style={{ padding: '0.9rem 1.25rem', background: 'hsl(var(--green-pale))', borderTop: '1px solid hsl(var(--primary) / .15)' }}>
+        <p style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'hsl(var(--primary))', marginBottom: '0.4rem' }}>
+          {explanation.headline}
+        </p>
+        <p style={{ fontSize: '0.84rem', color: 'hsl(var(--foreground))', lineHeight: 1.55, margin: 0 }}>
+          {explanation.body}
+        </p>
+      </div>
+
+      {/* CTA */}
+      <div style={{ padding: '1rem 1.25rem', background: 'hsl(var(--card))' }}>
+        <button
+          onClick={onDismiss}
+          className="w-full transition-all active:scale-[.97]"
+          style={{ padding: '16px 24px', borderRadius: '16px', background: 'hsl(128 28% 36%)', color: '#fff', border: 'none', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 20px hsl(128 28% 36% / .35)' }}
+        >
+          ✓ Entendido — empezar Fase {phase}
+        </button>
       </div>
     </div>
   )
@@ -441,7 +634,7 @@ function PreBloomHint({ count }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function Inicio({ appState, handlers, setViewer, setTab }) {
-  const { day, days, symScores, lessons, pwa } = appState
+  const { day, days, symScores, lessons, pwa, email } = appState
   const { completeToday, recordSymptom } = handlers
 
   const todayDone = days[day - 1]
@@ -452,6 +645,24 @@ export default function Inicio({ appState, handlers, setViewer, setTab }) {
     for (let i = day - 1; i >= 0; i--) { if (days[i]) s++; else break }
     return s
   }, [days, day])
+
+  // Phase state
+  const phase = getPhase(day)
+  const phaseRecipe = PHASE_RECIPES[phase]
+  const phaseTeaser = PHASE_TEASERS[day] || null
+  const [seenPhase2, setSeenPhase2] = useState(() => hasSeenPhaseUnlock(email, 2))
+  const [seenPhase3, setSeenPhase3] = useState(() => hasSeenPhaseUnlock(email, 3))
+  const showPhase2Unlock = phase === 2 && !seenPhase2
+  const showPhase3Unlock = phase === 3 && !seenPhase3
+  const unlockPhase = showPhase2Unlock ? 2 : showPhase3Unlock ? 3 : null
+
+  function dismissPhaseUnlock() {
+    if (unlockPhase) {
+      markPhaseUnlockSeen(email, unlockPhase)
+      if (unlockPhase === 2) setSeenPhase2(true)
+      else setSeenPhase3(true)
+    }
+  }
 
   // justBloomed: only true when user clicks the button THIS session
   const [justBloomed, setJustBloomed] = useState(false)
@@ -498,16 +709,26 @@ export default function Inicio({ appState, handlers, setViewer, setTab }) {
         isIOS={pwa?.isIOS}
       />
 
-      {/* Recipe card — permanent, collapsed after day 7 */}
-      <RecipeCard daysCompleted={daysCompleted} />
+      {/* Recipe card — permanent, shows phase-specific recipe */}
+      <RecipeCard daysCompleted={daysCompleted} recipe={phaseRecipe} />
 
-      {/* Block 1 — Action card (always, transforms on complete) */}
-      <ActionCard
-        day={day}
-        todayDone={todayDone}
-        onComplete={handleComplete}
-        compact={bloomed}
-      />
+      {/* Phase reveal — visible days 1–6, collapses after Phase 1 */}
+      <PhaseRevealCard day={day} phase={phase} />
+
+      {/* Block 1 — Phase unlock celebration OR normal action card */}
+      {unlockPhase ? (
+        <PhaseUnlockCard phase={unlockPhase} onDismiss={dismissPhaseUnlock} />
+      ) : (
+        <ActionCard
+          day={day}
+          todayDone={todayDone}
+          onComplete={handleComplete}
+          compact={bloomed}
+          phase={phase}
+          phaseRecipe={phaseRecipe}
+          phaseTeaser={phaseTeaser}
+        />
+      )}
 
       {/* Pre-bloom hint — only before completion */}
       {!bloomed && <PreBloomHint count={8} />}
