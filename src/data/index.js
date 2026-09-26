@@ -8,6 +8,7 @@ export const RECIPE_ITEMS = [
 export const LESSONS = [
   {
     id: 0,
+    unlockDay: 0,
     eyebrow: 'Lección 1',
     title: '🫙 La Receta — 3 ingredientes y cómo prepararlos',
     desc: 'La receta completa: ingredientes exactos, proporciones y preparación',
@@ -16,31 +17,39 @@ export const LESSONS = [
   },
   {
     id: 1,
+    unlockDay: 3,
     eyebrow: 'Lección 2',
     title: '⏰ El mejor horario para tomarla',
     desc: 'El horario ideal para maximizar cada dosis',
+    lockQuote: { text: 'Quienes conocen su horario exacto duplican sus resultados.', author: 'Dra. Patricia Sánchez' },
     pdf: '/pdfs/Leccion-Diaria-Cuando-Tomar-tu-Protocolo-de-Vinagre-de-Manzana.pdf',
   },
   {
     id: 2,
+    unlockDay: 5,
     eyebrow: 'Lección 3',
     title: '⚡ Qué comer para acelerar los resultados',
     desc: 'El protocolo completo de 21 días paso a paso',
+    lockQuote: { text: 'Los que llegan hasta aquí sienten la diferencia más rápido.', author: 'Dr. Vargas' },
     pdf: '/pdfs/Protocolo-21-Dias-de-Vinagre-de-Sidra-de-Manzana-Guia-para-Resultados-Mas-Rapidos.pdf',
   },
   {
     id: 3,
+    unlockDay: 7,
     eyebrow: 'Lección 4',
     title: '❌ Los errores que arruinan el protocolo',
     desc: 'La limpieza profunda que potencia el protocolo',
+    lockQuote: { text: 'Evitar estos errores es lo que separa a los que mejoran de los que no.', author: 'Dr. Méndez' },
     pdf: '/pdfs/Programa-de-Limpieza-con-Vinagre-de-Sidra-de-Manzana.pdf',
   },
   {
     id: 4,
+    unlockDay: 10,
     eyebrow: 'Lección 5',
     title: '🧫 Por qué el vinagre llega más fuerte',
     desc: 'El momento exacto que activa la absorción máxima',
     badge: 'Nuevo',
+    lockQuote: { text: 'La ciencia del jengibre en pulmones cambió lo que creíamos saber.', author: 'Instituto de Bienestar Natural' },
     pdf: '/pdfs/absorcion-maxima/Guia-de-Rescate-Intestinal-Protocolo-de-Eliminacion-y-Proteccion.pdf',
   },
 ]

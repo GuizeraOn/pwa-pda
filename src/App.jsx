@@ -30,6 +30,18 @@ function getFirstName(email) {
   return n.charAt(0).toUpperCase() + n.slice(1)
 }
 
+const STARTDATE_KEY = 'protocolo_start'
+function getOrSetStartTimestamp(email) {
+  try {
+    const key = `${STARTDATE_KEY}_${email}`
+    const existing = localStorage.getItem(key)
+    if (existing) return parseInt(existing)
+    const ts = Date.now()
+    localStorage.setItem(key, String(ts))
+    return ts
+  } catch { return Date.now() }
+}
+
 function loadSession() {
   try {
     const raw = localStorage.getItem(SESSION_KEY)
@@ -106,6 +118,7 @@ export default function App() {
   const pwa = usePWAInstall()
   const [showQuiz, setShowQuiz] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [startTimestamp, setStartTimestampState] = useState(null)
 
   // ── Restaura sessão salva ao abrir o app ────────────────────────────
   const applyUserState = useCallback((userEmail) => {
@@ -136,6 +149,7 @@ export default function App() {
       setEmail(savedEmail)
       applyUserState(savedEmail)
       setLoggedIn(true)
+      setStartTimestampState(getOrSetStartTimestamp(savedEmail))
       if (!hasSeenQuiz(savedEmail)) {
         setShowQuiz(true)
       } else if (!hasSeenOnboarding(savedEmail)) {
@@ -169,6 +183,7 @@ export default function App() {
     setEmail(inputEmail)
     applyUserState(inputEmail)
     setLoggedIn(true)
+    setStartTimestampState(getOrSetStartTimestamp(inputEmail))
     if (!hasSeenQuiz(inputEmail)) {
       setShowQuiz(true)
     } else if (!hasSeenOnboarding(inputEmail)) {
@@ -259,7 +274,7 @@ export default function App() {
     setTab('inicio')
   }, [])
 
-  const appState = { day, days, lessons, bonuses, absorcionProtocols, absorcionBonuses, ritualProtocols, ritualBonuses, symScores, email, vibrationEnabled, pwa }
+  const appState = { day, days, lessons, bonuses, absorcionProtocols, absorcionBonuses, ritualProtocols, ritualBonuses, symScores, email, vibrationEnabled, pwa, startTimestamp }
   const handlers = { completeToday, completeLesson, completeBonus, completeAbsorcionProtocol, completeAbsorcionBonus, completeRitualProtocol, completeRitualBonus, recordSymptom, toggleVibration, handleLogout, pwa }
 
   return (

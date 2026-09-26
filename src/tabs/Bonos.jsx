@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BONOS, ABSORCION_PROTOCOLS, ABSORCION_BONUSES, RITUAL_PROTOCOLS, RITUAL_BONUSES } from '../data'
 
 function ChevronRight() {
@@ -278,34 +278,62 @@ function SectionLabel({ children }) {
   )
 }
 
-// ── Teaser block (locked content preview + progress bar) ─────────────────────
+// ── Countdown helpers ─────────────────────────────────────────────────────────
 
-function TeaserBlock({ daysCompleted, color }) {
-  const pct = Math.round((daysCompleted / 7) * 100)
+function formatRemaining(ms) {
+  if (ms <= 0) return 'muy pronto'
+  const days = Math.floor(ms / 86400000)
+  const hours = Math.floor((ms % 86400000) / 3600000)
+  const mins = Math.floor((ms % 3600000) / 60000)
+  if (days > 0) return `${days} ${days === 1 ? 'día' : 'días'}, ${hours}h`
+  if (hours > 0) return `${hours}h ${mins}min`
+  if (mins > 0) return `${mins} min`
+  return 'muy pronto'
+}
+
+function LockCountdown({ targetTimestamp }) {
+  const [text, setText] = useState(() => formatRemaining(targetTimestamp - Date.now()))
+  useEffect(() => {
+    const id = setInterval(() => setText(formatRemaining(targetTimestamp - Date.now())), 60000)
+    return () => clearInterval(id)
+  }, [targetTimestamp])
+  return <>{text}</>
+}
+
+// ── Teaser block with real countdown ─────────────────────────────────────────
+
+function TeaserBlock({ startTimestamp, unlockDay, color }) {
+  const daysSince = startTimestamp ? Math.floor((Date.now() - startTimestamp) / 86400000) : 0
+  const targetTimestamp = (startTimestamp || Date.now()) + unlockDay * 86400000
+  const pct = Math.min(100, Math.round((daysSince / unlockDay) * 100))
+  const tc = color === 'teal'
   return (
     <div
       className="px-4 pb-4"
-      style={{ background: color === 'teal' ? 'hsl(168 40% 97%)' : 'hsl(38 80% 97%)' }}
+      style={{ background: tc ? 'hsl(168 40% 97%)' : 'hsl(38 80% 97%)' }}
     >
       <div
         className="rounded-[14px] p-4 flex flex-col gap-3"
-        style={{ background: color === 'teal' ? 'hsl(168 40% 92%)' : 'hsl(36 60% 92%)', border: `1px solid ${color === 'teal' ? 'hsl(168 35% 76%)' : 'hsl(36 50% 76%)'}` }}
+        style={{ background: tc ? 'hsl(168 40% 92%)' : 'hsl(36 60% 92%)', border: `1px solid ${tc ? 'hsl(168 35% 76%)' : 'hsl(36 50% 76%)'}` }}
       >
-        <p className="text-sm font-semibold" style={{ color: color === 'teal' ? 'hsl(168 42% 18%)' : 'hsl(28 40% 22%)' }}>
-          🔒 Disponible desde el día 7
+        <p className="text-sm font-semibold" style={{ color: tc ? 'hsl(168 42% 18%)' : 'hsl(28 40% 22%)' }}>
+          🔒 Disponible el día {unlockDay}
         </p>
-        <p className="text-xs" style={{ color: color === 'teal' ? 'hsl(168 32% 38%)' : 'hsl(28 30% 42%)' }}>
-          Completa tu primera semana para desbloquear este bloque.
-        </p>
+        <div className="flex items-center justify-between text-xs">
+          <span style={{ color: tc ? 'hsl(168 32% 38%)' : 'hsl(28 30% 42%)' }}>Se desbloquea en:</span>
+          <span className="font-bold" style={{ color: tc ? 'hsl(168 48% 26%)' : 'hsl(28 50% 32%)' }}>
+            <LockCountdown targetTimestamp={targetTimestamp} />
+          </span>
+        </div>
         <div>
-          <div className="flex justify-between text-[.7rem] font-semibold mb-1.5" style={{ color: color === 'teal' ? 'hsl(168 38% 34%)' : 'hsl(28 35% 38%)' }}>
+          <div className="flex justify-between text-[.7rem] font-semibold mb-1.5" style={{ color: tc ? 'hsl(168 38% 34%)' : 'hsl(28 35% 38%)' }}>
             <span>Tu progreso</span>
-            <span>{daysCompleted}/7 días</span>
+            <span>{daysSince}/{unlockDay} días</span>
           </div>
-          <div className="h-2 rounded-full overflow-hidden" style={{ background: color === 'teal' ? 'hsl(168 30% 80%)' : 'hsl(36 45% 80%)' }}>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: tc ? 'hsl(168 30% 80%)' : 'hsl(36 45% 80%)' }}>
             <div
               className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${pct}%`, background: color === 'teal' ? 'hsl(168 48% 36%)' : 'hsl(36 65% 46%)' }}
+              style={{ width: `${pct}%`, background: tc ? 'hsl(168 48% 36%)' : 'hsl(36 65% 46%)' }}
             />
           </div>
         </div>
@@ -317,9 +345,14 @@ function TeaserBlock({ daysCompleted, color }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function Bonos({ appState, setViewer }) {
-  const { bonuses, days, absorcionProtocols, absorcionBonuses, ritualProtocols, ritualBonuses } = appState
+  const { bonuses, days, absorcionProtocols, absorcionBonuses, ritualProtocols, ritualBonuses, startTimestamp } = appState
 
-  const daysCompleted = (days || []).filter(Boolean).length
+  const daysSinceStart = startTimestamp ? Math.floor((Date.now() - startTimestamp) / 86400000) : 0
+
+  const classicLocked   = daysSinceStart < 7
+  const absorcionLocked = daysSinceStart < 10
+  const ritualLocked    = daysSinceStart < 14
+  const day21Locked     = daysSinceStart < 21
 
   const absorcionCount = absorcionProtocols.filter(Boolean).length + absorcionBonuses.filter(Boolean).length
   const ritualCount    = ritualProtocols.filter(Boolean).length + ritualBonuses.filter(Boolean).length
@@ -329,7 +362,7 @@ export default function Bonos({ appState, setViewer }) {
   const regularBonuses  = ABSORCION_BONUSES.filter(b => !b.secret)
   const secretBonus     = ABSORCION_BONUSES.find(b => b.secret)
 
-  const [absorcionOpen, setAbsorcionOpen] = useState(() => daysCompleted >= 7)
+  const [absorcionOpen, setAbsorcionOpen] = useState(() => !absorcionLocked)
   const [ritualOpen, setRitualOpen] = useState(false)
 
   return (
@@ -343,11 +376,11 @@ export default function Bonos({ appState, setViewer }) {
           boxShadow: '0 6px 28px hsl(168 55% 26% / .12)',
         }}
       >
-        {/* Header teal — clickable toggle */}
+        {/* Header teal — clickable toggle (disabled when locked) */}
         <button
-          onClick={() => setAbsorcionOpen(o => !o)}
+          onClick={absorcionLocked ? undefined : () => setAbsorcionOpen(o => !o)}
           className="w-full px-5 pt-5 pb-4 flex items-start justify-between gap-3 text-left"
-          style={{ background: 'linear-gradient(135deg, hsl(168 55% 26%), hsl(172 48% 18%))' }}
+          style={{ background: 'linear-gradient(135deg, hsl(168 55% 26%), hsl(172 48% 18%))', cursor: absorcionLocked ? 'default' : 'pointer' }}
         >
           <div>
             <p className="text-[.6rem] font-bold tracking-[.18em] uppercase mb-1.5" style={{ color: 'rgba(255,255,255,.7)' }}>
@@ -361,19 +394,18 @@ export default function Bonos({ appState, setViewer }) {
             </p>
           </div>
           <div className="flex items-center gap-2.5 shrink-0 mt-1">
-            <div
-              className="text-xs font-bold px-3 py-1.5 rounded-full"
-              style={{ background: 'rgba(255,255,255,.2)', color: 'white' }}
-            >
-              {absorcionCount}/6
-            </div>
-            <svg
-              width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="rgba(255,255,255,.8)" strokeWidth="2.5"
-              style={{ transform: absorcionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .25s' }}
-            >
-              <path d="M6 9l6 6 6-6"/>
-            </svg>
+            {absorcionLocked ? (
+              <span style={{ fontSize: '1.3rem' }}>🔒</span>
+            ) : (
+              <>
+                <div className="text-xs font-bold px-3 py-1.5 rounded-full" style={{ background: 'rgba(255,255,255,.2)', color: 'white' }}>
+                  {absorcionCount}/6
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" strokeWidth="2.5" style={{ transform: absorcionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .25s' }}>
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
+              </>
+            )}
           </div>
         </button>
 
@@ -447,9 +479,9 @@ export default function Bonos({ appState, setViewer }) {
           </div>
         </div>
 
-        {/* Teaser when collapsed + first 7 days */}
-        {!absorcionOpen && daysCompleted < 7 && (
-          <TeaserBlock daysCompleted={daysCompleted} color="teal" />
+        {/* Teaser when locked */}
+        {absorcionLocked && (
+          <TeaserBlock startTimestamp={startTimestamp} unlockDay={10} color="teal" />
         )}
       </div>
 
@@ -461,11 +493,11 @@ export default function Bonos({ appState, setViewer }) {
           boxShadow: '0 4px 20px hsl(36 60% 50% / .10)',
         }}
       >
-        {/* Header — clicável para abrir/fechar */}
+        {/* Header — clicável para abrir/fechar (desabilitado quando bloqueado) */}
         <button
-          onClick={() => setRitualOpen(o => !o)}
+          onClick={ritualLocked ? undefined : () => setRitualOpen(o => !o)}
           className="w-full px-5 py-4 flex items-center justify-between gap-3 text-left"
-          style={{ background: 'linear-gradient(135deg, hsl(36 70% 46%), hsl(28 65% 36%))' }}
+          style={{ background: 'linear-gradient(135deg, hsl(36 70% 46%), hsl(28 65% 36%))', cursor: ritualLocked ? 'default' : 'pointer' }}
         >
           <div>
             <p className="text-[.6rem] font-bold tracking-[.18em] uppercase mb-1" style={{ color: 'rgba(255,255,255,.7)' }}>
@@ -479,19 +511,18 @@ export default function Bonos({ appState, setViewer }) {
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <span
-              className="text-xs font-bold px-3 py-1 rounded-full"
-              style={{ background: 'rgba(255,255,255,.2)', color: 'white' }}
-            >
-              {ritualCount}/7
-            </span>
-            <svg
-              width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="rgba(255,255,255,.8)" strokeWidth="2.5"
-              style={{ transform: ritualOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .25s' }}
-            >
-              <path d="M6 9l6 6 6-6"/>
-            </svg>
+            {ritualLocked ? (
+              <span style={{ fontSize: '1.3rem' }}>🔒</span>
+            ) : (
+              <>
+                <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'rgba(255,255,255,.2)', color: 'white' }}>
+                  {ritualCount}/7
+                </span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" strokeWidth="2.5" style={{ transform: ritualOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .25s' }}>
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
+              </>
+            )}
           </div>
         </button>
 
@@ -541,9 +572,9 @@ export default function Bonos({ appState, setViewer }) {
           </div>
         </div>
 
-        {/* Teaser when collapsed + first 7 days */}
-        {!ritualOpen && daysCompleted < 7 && (
-          <TeaserBlock daysCompleted={daysCompleted} color="amber" />
+        {/* Teaser when locked */}
+        {ritualLocked && (
+          <TeaserBlock startTimestamp={startTimestamp} unlockDay={14} color="amber" />
         )}
       </div>
 
@@ -552,16 +583,86 @@ export default function Bonos({ appState, setViewer }) {
         <p className="text-[.65rem] font-bold tracking-[.15em] uppercase mb-3 px-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
           Bonos del Protocolo del Vinagre
         </p>
-        <div className="flex flex-col gap-3.5">
-          {BONOS.map((bono, i) => (
-            <MainBonoCard
-              key={bono.id}
-              bono={bono}
-              done={bonuses[i]}
-              delay={i}
-              onOpen={() => setViewer({ type: 'bonus', id: bono.id })}
-            />
-          ))}
+        {classicLocked ? (
+          <div
+            className="rounded-[20px] overflow-hidden"
+            style={{ border: '1.5px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
+          >
+            {/* Locked previews */}
+            <div style={{ padding: '0.85rem 1rem', opacity: 0.45, pointerEvents: 'none' }}>
+              {BONOS.map((bono) => (
+                <div key={bono.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 0', borderBottom: '1px solid hsl(var(--border))' }}>
+                  <span style={{ fontSize: '1.3rem' }}>{bono.icon}</span>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'hsl(var(--foreground))' }}>{bono.title}</span>
+                </div>
+              ))}
+            </div>
+            {/* Countdown */}
+            <div style={{ padding: '0.85rem 1rem', background: 'hsl(var(--green-pale))' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '1rem' }}>🔒</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'hsl(var(--foreground))' }}>Disponible el día 7</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                <span style={{ color: 'hsl(var(--muted-foreground))' }}>Se desbloquea en:</span>
+                <span style={{ fontWeight: 700, color: 'hsl(var(--primary))' }}>
+                  <LockCountdown targetTimestamp={(startTimestamp || Date.now()) + 7 * 86400000} />
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3.5">
+            {BONOS.map((bono, i) => (
+              <MainBonoCard
+                key={bono.id}
+                bono={bono}
+                done={bonuses[i]}
+                delay={i}
+                onOpen={() => setViewer({ type: 'bonus', id: bono.id })}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── DÍA 21 — Reinicio Mitocondrial ───────────────────────── */}
+      <div className="px-4 mt-4 mb-2">
+        <div
+          className="rounded-[20px] overflow-hidden"
+          style={{ border: `1.5px solid ${day21Locked ? 'hsl(var(--border))' : 'hsl(128 38% 55%)'}`, boxShadow: day21Locked ? 'none' : '0 4px 20px hsl(128 28% 36% / .15)' }}
+        >
+          <div style={{ height: '3px', background: 'linear-gradient(90deg, hsl(128 30% 42%), hsl(36 66% 52%), hsl(280 50% 60%))' }} />
+          <div style={{ padding: '1rem 1.1rem', background: day21Locked ? 'hsl(var(--card))' : 'hsl(var(--green-pale))' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.6rem' }}>
+              <div>
+                <p style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'hsl(var(--muted-foreground))', marginBottom: '0.3rem' }}>
+                  {day21Locked ? 'Recompensa de finalización' : '¡Lo lograste!'}
+                </p>
+                <p style={{ fontWeight: 700, fontSize: '1rem', color: day21Locked ? 'hsl(var(--foreground) / .55)' : 'hsl(var(--foreground))', lineHeight: 1.25 }}>
+                  🔋 Reinicio Mitocondrial<br />+ Protocolo 60 Días
+                </p>
+              </div>
+              <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>{day21Locked ? '🔒' : '🏆'}</span>
+            </div>
+            <p style={{ fontSize: '0.82rem', color: 'hsl(var(--muted-foreground))', marginBottom: '0.65rem' }}>
+              {day21Locked
+                ? 'El siguiente nivel — para mantener y amplificar tus resultados a largo plazo.'
+                : 'Completaste el protocolo de 21 días. Tu próxima etapa está lista.'}
+            </p>
+            {day21Locked ? (
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                <span style={{ color: 'hsl(var(--muted-foreground))' }}>Disponible el día 21 — en:</span>
+                <span style={{ fontWeight: 700, color: 'hsl(var(--primary))' }}>
+                  <LockCountdown targetTimestamp={(startTimestamp || Date.now()) + 21 * 86400000} />
+                </span>
+              </div>
+            ) : (
+              <div style={{ background: 'hsl(var(--primary))', color: '#fff', borderRadius: '12px', padding: '0.6rem 1rem', textAlign: 'center', fontSize: '0.88rem', fontWeight: 600 }}>
+                Ver mi protocolo de mantenimiento →
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
