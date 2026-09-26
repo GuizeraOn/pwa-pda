@@ -4,18 +4,30 @@ import Shell from './components/Shell'
 import Viewer from './components/Viewer'
 import InstallModal from './components/InstallModal'
 import Onboarding from './components/Onboarding'
+import Quiz from './components/Quiz'
 import { usePWAInstall } from './hooks/usePWAInstall'
 
 const STORAGE_KEY = 'protocolo_state'
 const SESSION_KEY = 'protocolo_session'
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000
 const ONBOARDING_KEY = 'protocolo_onboarding'
+const QUIZ_KEY = 'protocolo_quiz'
 
 function hasSeenOnboarding(email) {
   try { return localStorage.getItem(`${ONBOARDING_KEY}_${email}`) === '1' } catch { return true }
 }
 function markOnboardingDone(email) {
   try { localStorage.setItem(`${ONBOARDING_KEY}_${email}`, '1') } catch {}
+}
+function hasSeenQuiz(email) {
+  try { return localStorage.getItem(`${QUIZ_KEY}_${email}`) === '1' } catch { return true }
+}
+function markQuizDone(email) {
+  try { localStorage.setItem(`${QUIZ_KEY}_${email}`, '1') } catch {}
+}
+function getFirstName(email) {
+  const n = email.split('@')[0].split('.')[0]
+  return n.charAt(0).toUpperCase() + n.slice(1)
 }
 
 function loadSession() {
@@ -92,6 +104,7 @@ export default function App() {
   })
 
   const pwa = usePWAInstall()
+  const [showQuiz, setShowQuiz] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
 
   // ── Restaura sessão salva ao abrir o app ────────────────────────────
@@ -123,7 +136,9 @@ export default function App() {
       setEmail(savedEmail)
       applyUserState(savedEmail)
       setLoggedIn(true)
-      if (!hasSeenOnboarding(savedEmail)) {
+      if (!hasSeenQuiz(savedEmail)) {
+        setShowQuiz(true)
+      } else if (!hasSeenOnboarding(savedEmail)) {
         setShowOnboarding(true)
       } else {
         const st = loadState(savedEmail)
@@ -131,6 +146,16 @@ export default function App() {
       }
     }
   }, [applyUserState])
+
+  const handleQuizComplete = useCallback(() => {
+    markQuizDone(email)
+    setShowQuiz(false)
+    if (!hasSeenOnboarding(email)) {
+      setShowOnboarding(true)
+    } else {
+      setTab('protocolo')
+    }
+  }, [email])
 
   const handleOnboardingComplete = useCallback(() => {
     markOnboardingDone(email)
@@ -144,7 +169,9 @@ export default function App() {
     setEmail(inputEmail)
     applyUserState(inputEmail)
     setLoggedIn(true)
-    if (!hasSeenOnboarding(inputEmail)) {
+    if (!hasSeenQuiz(inputEmail)) {
+      setShowQuiz(true)
+    } else if (!hasSeenOnboarding(inputEmail)) {
       setShowOnboarding(true)
     } else {
       const st = loadState(inputEmail)
@@ -248,6 +275,10 @@ export default function App() {
           handlers={handlers}
           pwa={pwa}
         />
+      )}
+
+      {showQuiz && (
+        <Quiz name={getFirstName(email)} onComplete={handleQuizComplete} />
       )}
 
       {showOnboarding && (
