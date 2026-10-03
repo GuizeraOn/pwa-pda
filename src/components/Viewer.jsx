@@ -226,6 +226,18 @@ export default function Viewer({ viewer, appState, onComplete, onClose }) {
             <CheckIcon />
             {isDone ? doneLabel : 'Marcar como completado'}
           </button>
+
+          {item.pdf && (
+            <a
+              href={item.pdf}
+              download
+              className="w-full flex items-center justify-center gap-2 mt-2.5 py-[13px] rounded-[14px] font-semibold text-sm transition-all active:scale-[.97]"
+              style={{ background: dlBg, color: dlColor, border: `1.5px solid ${dlBorder}` }}
+            >
+              <DownloadIcon />
+              Descargar PDF
+            </a>
+          )}
         </div>
       )}
     </div>
